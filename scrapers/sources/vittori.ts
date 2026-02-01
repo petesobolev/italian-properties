@@ -1,0 +1,286 @@
+/**
+ * Vittori Servizi Immobiliari Scraper
+ *
+ * Scrapes property listings from https://www.vittoriserviziimmobiliari.it
+ * This agency covers the Tuscany region, primarily around Siena province.
+ */
+
+import { BaseScraper } from "./base";
+import { ScraperSourceConfig } from "../types";
+import { SOURCES } from "../config";
+import { PropertyInsert, PropertyType } from "@/types";
+
+/**
+ * Raw listing data extracted from HTML before normalization
+ */
+interface RawListing {
+  title: string;
+  url: string;
+  imageUrl: string | null;
+  priceText: string;
+  description: string;
+  sqmText: string | null;
+  bedroomsText: string | null;
+  bathroomsText: string | null;
+}
+
+/**
+ * Vittori Servizi Immobiliari scraper implementation
+ */
+export class VittoriScraper extends BaseScraper {
+  readonly config: ScraperSourceConfig = SOURCES.vittori;
+
+  private readonly listingsPath = "/it/immobili-in-vendita";
+
+  /**
+   * Extract city name from listing title
+   * Format: "Lucignano (AR), Villetta a schiera..." -> "Lucignano"
+   */
+  private extractCity(title: string): string {
+    const match = title.match(/^([^(]+)\s*\(/);
+    if (match) {
+      return match[1].trim();
+    }
+    const commaIndex = title.indexOf(",");
+    if (commaIndex > 0) {
+      return title.substring(0, commaIndex).trim();
+    }
+    return title.trim();
+  }
+
+  /**
+   * Infer property type from Italian title
+   */
+  private inferPropertyType(title: string): PropertyType {
+    const lowerTitle = title.toLowerCase();
+
+    if (lowerTitle.includes("appartament")) return "apartment";
+    if (lowerTitle.includes("villa")) return "villa";
+    if (lowerTitle.includes("rustico") || lowerTitle.includes("casale") || lowerTitle.includes("podere")) return "farmhouse";
+    if (lowerTitle.includes("schiera") || lowerTitle.includes("bifamiliare")) return "townhouse";
+    if (lowerTitle.includes("attico") || lowerTitle.includes("mansard")) return "penthouse";
+    if (lowerTitle.includes("monolocale") || lowerTitle.includes("studio")) return "studio";
+    if (lowerTitle.includes("terreno")) return "land";
+    if (lowerTitle.includes("commerciale") || lowerTitle.includes("negozio") || lowerTitle.includes("ufficio") || lowerTitle.includes("magazzino") || lowerTitle.includes("fondo")) return "commercial";
+    if (lowerTitle.includes("casa singola") || lowerTitle.includes("villetta")) return "villa";
+
+    return "other";
+  }
+
+  /**
+   * Extract listings from a single page of HTML
+   */
+  private extractListings(html: string): RawListing[] {
+    const root = this.parseHtml(html);
+    const listings: RawListing[] = [];
+    const propertyCards = root.querySelectorAll(".property-container");
+
+    for (const card of propertyCards) {
+      try {
+        // Extract title and URL
+        const titleLink = card.querySelector(".property-text h3 a");
+        if (!titleLink) continue;
+
+        const title = titleLink.getAttribute("title") || titleLink.textContent.trim();
+        const relativeUrl = titleLink.getAttribute("href");
+        if (!relativeUrl) continue;
+
+        const url = `${this.config.baseUrl}${relativeUrl}`;
+
+        // Extract image URL
+        const imageDiv = card.querySelector(".image-wrapper");
+        let imageUrl: string | null = null;
+        if (imageDiv) {
+          const style = imageDiv.getAttribute("style") || "";
+          const imageMatch = style.match(/url\(([^)]+)\)/);
+          if (imageMatch) {
+            imageUrl = imageMatch[1].replace(/['"]/g, "");
+          }
+        }
+
+        // Extract price
+        const priceSpan = card.querySelector(".property-text h4 span");
+        const priceText = priceSpan?.textContent || "";
+
+        // Extract description
+        const descP = card.querySelector(".property-text p.line-clamp");
+        const description = descP?.textContent.trim() || "";
+
+        // Extract features
+        const features = card.querySelectorAll(".property-features span");
+        let sqmText: string | null = null;
+        let bedroomsText: string | null = null;
+        let bathroomsText: string | null = null;
+
+        for (const feature of features) {
+          const featureHtml = feature.innerHTML;
+          const text = feature.textContent.replace(/\s+/g, " ").trim();
+          const numMatch = text.match(/(\d+)/);
+          const numStr = numMatch ? numMatch[1] : null;
+
+          if (featureHtml.includes("fa-ruler-combined")) {
+            sqmText = numStr;
+          } else if (featureHtml.includes("fa-bed")) {
+            bedroomsText = numStr;
+          } else if (featureHtml.includes("fa-bath")) {
+            bathroomsText = numStr;
+          }
+        }
+
+        listings.push({
+          title,
+          url,
+          imageUrl,
+          priceText,
+          description,
+          sqmText,
+          bedroomsText,
+          bathroomsText,
+        });
+      } catch (error) {
+        this.logError("Error parsing listing card", error);
+      }
+    }
+
+    return listings;
+  }
+
+  /**
+   * Get the maximum page number from pagination links
+   */
+  private getMaxPageNumber(html: string): number {
+    const root = this.parseHtml(html);
+    const paginationLinks = root.querySelectorAll(".pagination a");
+    let maxPage = 1;
+
+    for (const link of paginationLinks) {
+      const href = link.getAttribute("href") || "";
+      const pageMatch = href.match(/page=(\d+)/);
+      if (pageMatch) {
+        const pageNum = parseInt(pageMatch[1], 10);
+        if (pageNum > maxPage) {
+          maxPage = pageNum;
+        }
+      }
+    }
+
+    return maxPage;
+  }
+
+  /**
+   * Build URL for a specific page
+   */
+  private buildPageUrl(pageNum: number): string {
+    const baseListingsUrl = `${this.config.baseUrl}${this.listingsPath}`;
+    if (pageNum === 1) {
+      return baseListingsUrl;
+    }
+    return `${baseListingsUrl}?page=${pageNum}`;
+  }
+
+  /**
+   * Normalize raw listings into PropertyInsert format
+   */
+  private normalizeListings(
+    rawListings: RawListing[],
+    regionId: string,
+    sourceId: string
+  ): PropertyInsert[] {
+    return rawListings
+      .map((raw) => {
+        const price = this.parsePrice(raw.priceText);
+
+        if (price === null) {
+          this.log(`Skipping listing without valid price: ${raw.title}`);
+          return null;
+        }
+
+        const property: PropertyInsert = {
+          region_id: regionId,
+          source_id: sourceId,
+          city: this.extractCity(raw.title),
+          price_eur: price,
+          bedrooms: this.parseNumeric(raw.bedroomsText),
+          bathrooms: this.parseNumeric(raw.bathroomsText),
+          living_area_sqm: this.parseNumeric(raw.sqmText),
+          property_type: this.inferPropertyType(raw.title),
+          image_urls: raw.imageUrl ? [raw.imageUrl] : [],
+          description_it: raw.description || null,
+          listing_url: raw.url,
+        };
+
+        return property;
+      })
+      .filter((p): p is PropertyInsert => p !== null);
+  }
+
+  /**
+   * Main scrape method
+   */
+  async scrape(
+    regionId: string,
+    sourceId: string,
+    regionSlug: string
+  ): Promise<PropertyInsert[]> {
+    this.log(`Starting scrape for region: ${regionSlug}`);
+
+    const allListings: RawListing[] = [];
+    const maxPages = this.config.maxPages || 20;
+
+    // Fetch page 1 to determine total pages
+    const firstPageUrl = this.buildPageUrl(1);
+    this.log(`Fetching page 1: ${firstPageUrl}`);
+
+    try {
+      const firstPageHtml = await this.fetchPage(firstPageUrl);
+      const firstPageListings = this.extractListings(firstPageHtml);
+      this.log(`  Found ${firstPageListings.length} listings on page 1`);
+      allListings.push(...firstPageListings);
+
+      // Determine total pages
+      const totalPages = Math.min(this.getMaxPageNumber(firstPageHtml), maxPages);
+      this.log(`  Total pages to scrape: ${totalPages}`);
+
+      // Fetch remaining pages
+      for (let page = 2; page <= totalPages; page++) {
+        await this.delay();
+
+        const pageUrl = this.buildPageUrl(page);
+        this.log(`Fetching page ${page}: ${pageUrl}`);
+
+        try {
+          const html = await this.fetchPage(pageUrl);
+          const pageListings = this.extractListings(html);
+          this.log(`  Found ${pageListings.length} listings on page ${page}`);
+          allListings.push(...pageListings);
+
+          if (pageListings.length === 0) {
+            this.log("  Empty page, stopping pagination");
+            break;
+          }
+        } catch (error) {
+          this.logError(`Error fetching page ${page}`, error);
+          break;
+        }
+      }
+    } catch (error) {
+      this.logError("Error fetching page 1", error);
+      return [];
+    }
+
+    this.log(`Total raw listings collected: ${allListings.length}`);
+
+    // Normalize and return
+    const properties = this.normalizeListings(allListings, regionId, sourceId);
+    this.log(`Normalized properties: ${properties.length}`);
+
+    return properties;
+  }
+}
+
+/**
+ * Factory function to create a Vittori scraper instance
+ */
+export function createVittoriScraper(): VittoriScraper {
+  return new VittoriScraper();
+}
