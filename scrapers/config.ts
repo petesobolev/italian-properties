@@ -63,15 +63,15 @@ export const SOURCES: Record<string, ScraperSourceConfig> = {
   // PUGLIA SOURCES
   // =========================================================================
 
-  // Placeholder for Puglia sources
-  // "puglia-case": {
-  //   id: "puglia-case",
-  //   name: "Puglia Case",
-  //   baseUrl: "https://example.com",
-  //   regions: ["puglia"],
-  //   isActive: false,
-  //   maxPages: 10,
-  // },
+  casaamola: {
+    id: "casaamola",
+    name: "Casa Amola",
+    baseUrl: "https://casaamola.it",
+    regions: ["puglia"],
+    isActive: true,
+    maxPages: 10,
+    requestDelayMs: 1500, // Be respectful to smaller agency sites
+  },
 
   // =========================================================================
   // MULTI-REGION SOURCES
