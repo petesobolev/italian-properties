@@ -15,6 +15,7 @@ import { Scraper, ScraperFactory, ScraperRegistry } from "./types";
 // Import all scraper factories
 import { createVittoriScraper } from "./sources/vittori";
 import { createCasaAmolaScraper } from "./sources/casaamola";
+import { createProfessioneImmobiliareScraper } from "./sources/professioneimmobiliare";
 
 /**
  * Registry of all available scrapers
@@ -23,9 +24,7 @@ import { createCasaAmolaScraper } from "./sources/casaamola";
 export const SCRAPER_REGISTRY: ScraperRegistry = {
   vittori: createVittoriScraper,
   casaamola: createCasaAmolaScraper,
-
-  // Add new scrapers here as they are implemented:
-  // "calabria-immobiliare": createCalabriaImmobiliareScraper,
+  professioneimmobiliare: createProfessioneImmobiliareScraper,
 };
 
 /**

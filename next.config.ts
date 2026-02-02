@@ -29,6 +29,11 @@ const nextConfig: NextConfig = {
         hostname: "casaamola.it",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.professioneimmobiliareitalia.it",
+        pathname: "/**",
+      },
     ],
   },
 };

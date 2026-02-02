@@ -49,15 +49,15 @@ export const SOURCES: Record<string, ScraperSourceConfig> = {
   // CALABRIA SOURCES
   // =========================================================================
 
-  // Placeholder for Calabria sources
-  // "calabria-immobiliare": {
-  //   id: "calabria-immobiliare",
-  //   name: "Calabria Immobiliare",
-  //   baseUrl: "https://example.com",
-  //   regions: ["calabria"],
-  //   isActive: false,
-  //   maxPages: 10,
-  // },
+  professioneimmobiliare: {
+    id: "professioneimmobiliare",
+    name: "Professione Immobiliare Italia",
+    baseUrl: "https://www.professioneimmobiliareitalia.it",
+    regions: ["calabria"],
+    isActive: true,
+    maxPages: 50, // Many cities to iterate through
+    requestDelayMs: 1500, // Be respectful with delays
+  },
 
   // =========================================================================
   // PUGLIA SOURCES
