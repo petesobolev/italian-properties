@@ -85,8 +85,9 @@ async function insertProperty(property: PropertyInsert): Promise<Property | null
       `INSERT INTO properties (
         region_id, source_id, city, price_eur, bedrooms, bathrooms,
         living_area_sqm, property_type, image_urls, description_it,
-        listing_url, last_seen_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
+        listing_url, has_garden, has_terrace, has_balcony, has_parking, has_garage,
+        last_seen_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CURRENT_TIMESTAMP)
       ON CONFLICT (listing_url) DO UPDATE SET
         price_eur = EXCLUDED.price_eur,
         bedrooms = COALESCE(EXCLUDED.bedrooms, properties.bedrooms),
@@ -94,6 +95,11 @@ async function insertProperty(property: PropertyInsert): Promise<Property | null
         living_area_sqm = COALESCE(EXCLUDED.living_area_sqm, properties.living_area_sqm),
         image_urls = EXCLUDED.image_urls,
         description_it = EXCLUDED.description_it,
+        has_garden = COALESCE(EXCLUDED.has_garden, properties.has_garden),
+        has_terrace = COALESCE(EXCLUDED.has_terrace, properties.has_terrace),
+        has_balcony = COALESCE(EXCLUDED.has_balcony, properties.has_balcony),
+        has_parking = COALESCE(EXCLUDED.has_parking, properties.has_parking),
+        has_garage = COALESCE(EXCLUDED.has_garage, properties.has_garage),
         last_seen_at = CURRENT_TIMESTAMP,
         updated_at = CURRENT_TIMESTAMP
       RETURNING *`,
@@ -109,6 +115,11 @@ async function insertProperty(property: PropertyInsert): Promise<Property | null
         JSON.stringify(property.image_urls || []),
         property.description_it,
         property.listing_url,
+        property.has_garden ?? null,
+        property.has_terrace ?? null,
+        property.has_balcony ?? null,
+        property.has_parking ?? null,
+        property.has_garage ?? null,
       ]
     );
     return result;

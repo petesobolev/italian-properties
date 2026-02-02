@@ -8,6 +8,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPropertyById } from "@/lib/properties";
+import { translateToEnglish } from "@/lib/translate";
 import { ImageGallery } from "@/components/ImageGallery";
 import { PropertyFeatures } from "@/components/PropertyFeatures";
 
@@ -26,6 +27,18 @@ function formatPrice(price: number): string {
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(price);
+}
+
+/**
+ * Format date for display (e.g., "January 15, 2025")
+ */
+function formatDate(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(d);
 }
 
 /**
@@ -63,6 +76,9 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 
   const typeLabel = propertyTypeLabels[property.property_type] || "Proprietà";
   const regionName = regionNames[property.region_slug] || property.region_slug;
+
+  // Translate Italian description to English
+  const description = await translateToEnglish(property.description_it);
 
   return (
     <div className="min-h-screen bg-[var(--color-stone)]">
@@ -102,15 +118,15 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             />
 
             {/* Description */}
-            {property.description_it && (
+            {description && (
               <section className="bg-[var(--color-cream)] rounded-xl p-6 sm:p-8 border border-[var(--color-sand)]">
                 <h2 className="font-display text-2xl text-[var(--color-text)] mb-4 flex items-center gap-3">
                   <span className="w-8 h-0.5 bg-[var(--color-terracotta)]" />
-                  Descrizione
+                  Description
                 </h2>
                 <div className="prose prose-stone max-w-none">
                   <p className="text-[var(--color-text-muted)] leading-relaxed whitespace-pre-line">
-                    {property.description_it}
+                    {description}
                   </p>
                 </div>
               </section>
@@ -230,9 +246,25 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                 </a>
 
                 {/* Source Info */}
-                <p className="mt-4 text-xs text-center text-[var(--color-text-light)]">
-                  Listed by {property.source_name}
-                </p>
+                <div className="mt-4 text-xs text-center text-[var(--color-text-light)] space-y-1">
+                  <p>Listed by {property.source_name}</p>
+                  <p className="flex items-center justify-center gap-1.5">
+                    <svg
+                      className="w-3.5 h-3.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Updated {formatDate(property.updated_at)}
+                  </p>
+                </div>
               </div>
 
               {/* Back to Region Link */}

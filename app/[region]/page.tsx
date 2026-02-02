@@ -28,6 +28,7 @@ interface RegionPageProps {
     seaView?: string;
     garden?: string;
     view?: "grid" | "map";
+    sort?: "updated" | "price_asc" | "price_desc";
   }>;
 }
 
@@ -94,6 +95,7 @@ export default async function RegionPage({ params, searchParams }: RegionPagePro
     property_types: search.type ? [search.type as PropertyFiltersType["property_types"] extends (infer U)[] | undefined ? U : never] : undefined,
     has_sea_view: search.seaView === "true" ? true : undefined,
     has_garden: search.garden === "true" ? true : undefined,
+    sort: search.sort || "updated",
   };
 
   // Fetch region and properties from database

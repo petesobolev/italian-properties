@@ -112,8 +112,13 @@ export interface PropertyInsert {
   image_urls?: string[];
   description_it?: string | null;
   listing_url: string;
+  // Feature flags - extracted from listings
   has_sea_view?: boolean | null;
   has_garden?: boolean | null;
+  has_terrace?: boolean | null;
+  has_balcony?: boolean | null;
+  has_parking?: boolean | null;
+  has_garage?: boolean | null;
 }
 
 /**
@@ -170,6 +175,11 @@ export interface PropertySummary {
 // ============================================================================
 
 /**
+ * Sort options for property listings
+ */
+export type PropertySortOption = "updated" | "price_asc" | "price_desc";
+
+/**
  * Filters for property search queries
  */
 export interface PropertyFilters {
@@ -186,6 +196,7 @@ export interface PropertyFilters {
   city?: string;
   has_sea_view?: boolean;
   has_garden?: boolean;
+  sort?: PropertySortOption;
 }
 
 /**

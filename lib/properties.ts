@@ -8,11 +8,10 @@
  * - All queries include proper JOINs to get related data
  * - Results are typed using our database types
  * - Functions handle missing database gracefully (returns empty data)
- * - Uses static imports for better performance (avoids dynamic import overhead)
+ * - Uses dynamic imports to avoid blocking Next.js startup
  */
 
 import { PropertySummary, PropertyWithDetails, Region, PropertyFilters } from "@/types";
-import { queryAll, queryOne } from "@/db";
 
 /**
  * Check if database is available
@@ -20,6 +19,15 @@ import { queryAll, queryOne } from "@/db";
  */
 function isDatabaseAvailable(): boolean {
   return !!process.env.DATABASE_URL;
+}
+
+/**
+ * Lazy import of database functions
+ * This prevents blocking Next.js startup if there are connection issues
+ */
+async function getDb() {
+  if (!isDatabaseAvailable()) return null;
+  return await import("@/db");
 }
 
 /**
@@ -31,7 +39,8 @@ export async function getPropertiesByRegion(
   regionSlug: string,
   filters?: PropertyFilters
 ): Promise<PropertySummary[]> {
-  if (!isDatabaseAvailable()) return [];
+  const db = await getDb();
+  if (!db) return [];
 
   try {
     // Build dynamic query with filters
@@ -79,7 +88,15 @@ export async function getPropertiesByRegion(
       conditions.push(`p.has_garden = true`);
     }
 
-    const results = await queryAll<{
+    // Determine sort order (default to most recently updated)
+    let orderBy = "p.updated_at DESC";
+    if (filters?.sort === "price_asc") {
+      orderBy = "p.price_eur ASC";
+    } else if (filters?.sort === "price_desc") {
+      orderBy = "p.price_eur DESC";
+    }
+
+    const results = await db.queryAll<{
       id: string;
       city: string;
       price_eur: number;
@@ -107,7 +124,7 @@ export async function getPropertiesByRegion(
       FROM properties p
       JOIN regions r ON p.region_id = r.id
       WHERE ${conditions.join(" AND ")}
-      ORDER BY p.created_at DESC`,
+      ORDER BY ${orderBy}`,
       params
     );
 
@@ -138,10 +155,11 @@ export async function getPropertiesByRegion(
 export async function getPropertyById(
   propertyId: string
 ): Promise<PropertyWithDetails | null> {
-  if (!isDatabaseAvailable()) return null;
+  const db = await getDb();
+  if (!db) return null;
 
   try {
-    const result = await queryOne<PropertyWithDetails & { image_urls: string[] }>(
+    const result = await db.queryOne<PropertyWithDetails & { image_urls: string[] }>(
       `SELECT
         p.*,
         r.name as region_name,
@@ -166,10 +184,11 @@ export async function getPropertyById(
  * Get a region by slug
  */
 export async function getRegion(slug: string): Promise<Region | null> {
-  if (!isDatabaseAvailable()) return null;
+  const db = await getDb();
+  if (!db) return null;
 
   try {
-    return await queryOne<Region>("SELECT * FROM regions WHERE slug = $1", [slug]);
+    return await db.queryOne<Region>("SELECT * FROM regions WHERE slug = $1", [slug]);
   } catch (error) {
     console.error("Error fetching region:", error);
     return null;
@@ -182,10 +201,11 @@ export async function getRegion(slug: string): Promise<Region | null> {
 export async function getPropertyCountByRegion(
   regionSlug: string
 ): Promise<number> {
-  if (!isDatabaseAvailable()) return 0;
+  const db = await getDb();
+  if (!db) return 0;
 
   try {
-    const result = await queryOne<{ count: string }>(
+    const result = await db.queryOne<{ count: string }>(
       `SELECT COUNT(*) as count
       FROM properties p
       JOIN regions r ON p.region_id = r.id
@@ -207,10 +227,11 @@ export async function getPropertyCountByRegion(
 export async function getRegionsWithCounts(): Promise<
   Array<{ slug: string; name: string; count: number }>
 > {
-  if (!isDatabaseAvailable()) return [];
+  const db = await getDb();
+  if (!db) return [];
 
   try {
-    const results = await queryAll<{ slug: string; name: string; count: string }>(
+    const results = await db.queryAll<{ slug: string; name: string; count: string }>(
       `SELECT
         r.slug,
         r.name,

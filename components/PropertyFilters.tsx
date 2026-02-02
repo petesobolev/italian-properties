@@ -58,6 +58,12 @@ const SIZE_RANGES = [
   { label: "Over 300 m²", value: "300-" },
 ];
 
+const SORT_OPTIONS = [
+  { label: "Recently Updated", value: "updated" },
+  { label: "Price: Low to High", value: "price_asc" },
+  { label: "Price: High to Low", value: "price_desc" },
+];
+
 interface PropertyFiltersProps {
   className?: string;
 }
@@ -75,6 +81,7 @@ export function PropertyFilters({ className = "" }: PropertyFiltersProps) {
   const currentType = searchParams.get("type") || "";
   const currentSeaView = searchParams.get("seaView") === "true";
   const currentGarden = searchParams.get("garden") === "true";
+  const currentSort = searchParams.get("sort") || "updated";
 
   // Update URL with new filter value
   const updateFilter = useCallback(
@@ -147,6 +154,21 @@ export function PropertyFilters({ className = "" }: PropertyFiltersProps) {
       )}
 
       <div className="space-y-6">
+        {/* Sort Order */}
+        <FilterSection title="Sort By" icon={<SortIcon />}>
+          <select
+            value={currentSort}
+            onChange={(e) => updateFilter("sort", e.target.value)}
+            className="filter-select"
+          >
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </FilterSection>
+
         {/* Price Range */}
         <FilterSection title="Price Range" icon={<PriceIcon />}>
           <select
@@ -474,6 +496,24 @@ function GardenIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M6.75 14.25c-1.5 0-2.75-1.25-2.75-2.75 0-1.25 1-2.25 2-3 .33-.25.67-.4 1-.5M17.25 14.25c1.5 0 2.75-1.25 2.75-2.75 0-1.25-1-2.25-2-3-.33-.25-.67-.4-1-.5"
+      />
+    </svg>
+  );
+}
+
+function SortIcon() {
+  return (
+    <svg
+      className="w-4 h-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5"
       />
     </svg>
   );

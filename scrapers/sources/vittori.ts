@@ -3,6 +3,11 @@
  *
  * Scrapes property listings from https://www.vittoriserviziimmobiliari.it
  * This agency covers the Tuscany region, primarily around Siena province.
+ *
+ * Features:
+ * - Fetches all pages from the listing grid
+ * - Visits each property detail page to extract full image gallery
+ * - Extracts additional features (garden, terrace, etc.) from detail pages
  */
 
 import { BaseScraper } from "./base";
@@ -22,6 +27,19 @@ interface RawListing {
   sqmText: string | null;
   bedroomsText: string | null;
   bathroomsText: string | null;
+}
+
+/**
+ * Detail page data extracted from property page
+ */
+interface DetailPageData {
+  imageUrls: string[];
+  hasGarden: boolean;
+  hasTerrace: boolean;
+  hasBalcony: boolean;
+  hasParking: boolean;
+  hasGarage: boolean;
+  fullDescription: string | null;
 }
 
 /**
@@ -87,7 +105,7 @@ export class VittoriScraper extends BaseScraper {
 
         const url = `${this.config.baseUrl}${relativeUrl}`;
 
-        // Extract image URL
+        // Extract image URL (thumbnail for now, will be replaced by detail page images)
         const imageDiv = card.querySelector(".image-wrapper");
         let imageUrl: string | null = null;
         if (imageDiv) {
@@ -146,6 +164,74 @@ export class VittoriScraper extends BaseScraper {
   }
 
   /**
+   * Fetch and parse a property detail page to extract full gallery and features
+   */
+  private async fetchDetailPage(url: string): Promise<DetailPageData> {
+    const defaultData: DetailPageData = {
+      imageUrls: [],
+      hasGarden: false,
+      hasTerrace: false,
+      hasBalcony: false,
+      hasParking: false,
+      hasGarage: false,
+      fullDescription: null,
+    };
+
+    try {
+      const html = await this.fetchPage(url);
+      const root = this.parseHtml(html);
+
+      // Extract all images from the royal slider gallery
+      const imageLinks = root.querySelectorAll("#slider-property .rsImg, .royalSlider .rsImg");
+      const imageUrls: string[] = [];
+
+      for (const link of imageLinks) {
+        // Try data-rsBigImg first (full size), then href
+        const imageUrl = link.getAttribute("data-rsBigImg") || link.getAttribute("href");
+        if (imageUrl && imageUrl.includes("gestionaleimmobiliare.it")) {
+          imageUrls.push(imageUrl);
+        }
+      }
+
+      // If no slider images found, try extracting from background-image styles
+      if (imageUrls.length === 0) {
+        const allImages = html.match(/https:\/\/images\.gestionaleimmobiliare\.it\/foto\/annunci\/[^"'\s)]+/g);
+        if (allImages) {
+          // Filter to 1280x1280 images and dedupe
+          const uniqueImages = [...new Set(allImages.filter(img => img.includes("1280x1280")))];
+          imageUrls.push(...uniqueImages);
+        }
+      }
+
+      // Extract features from the page content
+      const pageText = html.toLowerCase();
+      const hasGarden = pageText.includes("giardino") && !pageText.includes("senza giardino");
+      const hasTerrace = pageText.includes("terrazza") || pageText.includes("terrazzo");
+      const hasBalcony = pageText.includes("balcon");
+      const hasParking = pageText.includes("parcheggio") || pageText.includes("posto auto");
+      const hasGarage = pageText.includes("garage") || pageText.includes("box auto");
+
+      // Extract full description from detail page
+      // The full description is in the .description-wrapper element
+      const descriptionEl = root.querySelector(".description-wrapper");
+      const fullDescription = descriptionEl?.textContent.trim().replace(/\s+/g, ' ') || null;
+
+      return {
+        imageUrls,
+        hasGarden,
+        hasTerrace,
+        hasBalcony,
+        hasParking,
+        hasGarage,
+        fullDescription,
+      };
+    } catch (error) {
+      this.logError(`Error fetching detail page: ${url}`, error);
+      return defaultData;
+    }
+  }
+
+  /**
    * Get the maximum page number from pagination links
    */
   private getMaxPageNumber(html: string): number {
@@ -180,38 +266,61 @@ export class VittoriScraper extends BaseScraper {
 
   /**
    * Normalize raw listings into PropertyInsert format
+   * Now includes detail page data with full image galleries
    */
-  private normalizeListings(
+  private async normalizeListingsWithDetails(
     rawListings: RawListing[],
     regionId: string,
     sourceId: string
-  ): PropertyInsert[] {
-    return rawListings
-      .map((raw) => {
-        const price = this.parsePrice(raw.priceText);
+  ): Promise<PropertyInsert[]> {
+    const properties: PropertyInsert[] = [];
 
-        if (price === null) {
-          this.log(`Skipping listing without valid price: ${raw.title}`);
-          return null;
-        }
+    for (let i = 0; i < rawListings.length; i++) {
+      const raw = rawListings[i];
+      const price = this.parsePrice(raw.priceText);
 
-        const property: PropertyInsert = {
-          region_id: regionId,
-          source_id: sourceId,
-          city: this.extractCity(raw.title),
-          price_eur: price,
-          bedrooms: this.parseNumeric(raw.bedroomsText),
-          bathrooms: this.parseNumeric(raw.bathroomsText),
-          living_area_sqm: this.parseNumeric(raw.sqmText),
-          property_type: this.inferPropertyType(raw.title),
-          image_urls: raw.imageUrl ? [raw.imageUrl] : [],
-          description_it: raw.description || null,
-          listing_url: raw.url,
-        };
+      if (price === null) {
+        this.log(`Skipping listing without valid price: ${raw.title}`);
+        continue;
+      }
 
-        return property;
-      })
-      .filter((p): p is PropertyInsert => p !== null);
+      // Fetch detail page for full gallery and features
+      this.log(`  [${i + 1}/${rawListings.length}] Fetching details: ${this.extractCity(raw.title)}`);
+
+      await this.delay();
+      const detailData = await this.fetchDetailPage(raw.url);
+
+      // Use detail page images if available, otherwise fall back to thumbnail
+      const imageUrls = detailData.imageUrls.length > 0
+        ? detailData.imageUrls
+        : (raw.imageUrl ? [raw.imageUrl] : []);
+
+      this.log(`    Found ${imageUrls.length} images`);
+
+      const property: PropertyInsert = {
+        region_id: regionId,
+        source_id: sourceId,
+        city: this.extractCity(raw.title),
+        price_eur: price,
+        bedrooms: this.parseNumeric(raw.bedroomsText),
+        bathrooms: this.parseNumeric(raw.bathroomsText),
+        living_area_sqm: this.parseNumeric(raw.sqmText),
+        property_type: this.inferPropertyType(raw.title),
+        image_urls: imageUrls,
+        description_it: detailData.fullDescription || raw.description || null,
+        listing_url: raw.url,
+        // Add extracted features
+        has_garden: detailData.hasGarden || null,
+        has_terrace: detailData.hasTerrace || null,
+        has_balcony: detailData.hasBalcony || null,
+        has_parking: detailData.hasParking || null,
+        has_garage: detailData.hasGarage || null,
+      };
+
+      properties.push(property);
+    }
+
+    return properties;
   }
 
   /**
@@ -269,10 +378,11 @@ export class VittoriScraper extends BaseScraper {
     }
 
     this.log(`Total raw listings collected: ${allListings.length}`);
+    this.log(`\nFetching detail pages for full image galleries...`);
 
-    // Normalize and return
-    const properties = this.normalizeListings(allListings, regionId, sourceId);
-    this.log(`Normalized properties: ${properties.length}`);
+    // Normalize with detail page fetching
+    const properties = await this.normalizeListingsWithDetails(allListings, regionId, sourceId);
+    this.log(`\nNormalized properties: ${properties.length}`);
 
     return properties;
   }
