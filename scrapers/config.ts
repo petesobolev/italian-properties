@@ -59,6 +59,16 @@ export const SOURCES: Record<string, ScraperSourceConfig> = {
     requestDelayMs: 1500, // Be respectful with delays
   },
 
+  gesticasa: {
+    id: "gesticasa",
+    name: "Gesticasa Immobiliare",
+    baseUrl: "https://www.gesticasaimmobiliare.it",
+    regions: ["calabria"],
+    isActive: true,
+    maxPages: 1, // All properties on single page
+    requestDelayMs: 1500, // Be respectful - many detail pages to fetch
+  },
+
   // =========================================================================
   // PUGLIA SOURCES
   // =========================================================================

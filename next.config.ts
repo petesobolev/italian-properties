@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
         hostname: "www.professioneimmobiliareitalia.it",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.gesticasaimmobiliare.it",
+        pathname: "/**",
+      },
     ],
   },
 };
