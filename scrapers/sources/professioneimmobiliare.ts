@@ -7,6 +7,7 @@
  * Strategy:
  * - Uses WordPress REST API to get list of cities with property counts
  * - Fetches each city archive page which contains embedded JSON with full property data
+ * - Visits each property detail page to get the full description
  * - Extracts price, images, features from the embedded MyHome theme data
  */
 
@@ -201,6 +202,44 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
   }
 
   /**
+   * Fetch full description from property detail page
+   * The embedded JSON only contains truncated excerpts, so we need to visit
+   * each detail page to get the complete description.
+   */
+  private async fetchFullDescription(detailUrl: string): Promise<string | null> {
+    try {
+      const html = await this.fetchPage(detailUrl);
+      const root = this.parseHtml(html);
+
+      // Look for the description section (MyHome theme structure)
+      const descriptionSection = root.querySelector(".mh-estate__section--description p");
+      if (descriptionSection) {
+        // Get text content and clean up whitespace
+        let description = descriptionSection.textContent?.trim() || null;
+        if (description) {
+          // Normalize whitespace and remove excessive line breaks
+          description = description.replace(/\s+/g, " ").trim();
+        }
+        return description;
+      }
+
+      // Fallback: try og:description meta tag (still truncated but better than excerpt)
+      const ogDesc = root.querySelector('meta[property="og:description"]');
+      if (ogDesc) {
+        const content = ogDesc.getAttribute("content");
+        if (content && !content.includes("[&hellip;]")) {
+          return content.trim();
+        }
+      }
+
+      return null;
+    } catch (error) {
+      this.logError(`Error fetching detail page: ${detailUrl}`, error);
+      return null;
+    }
+  }
+
+  /**
    * Main scrape method
    */
   async scrape(
@@ -232,8 +271,9 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
 
         this.log(`  Extracted ${estates.length} properties from page`);
 
+        // Collect estates to process (filter duplicates and invalid prices first)
+        const estatesToProcess: EmbeddedEstate[] = [];
         for (const estate of estates) {
-          // Skip duplicates (a property might appear in multiple city searches)
           if (seenIds.has(estate.id)) continue;
           seenIds.add(estate.id);
 
@@ -242,6 +282,18 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
             this.log(`  Skipping ${estate.name?.slice(0, 30)} - no valid price`);
             continue;
           }
+          estatesToProcess.push(estate);
+        }
+
+        // Process each estate, fetching full description from detail page
+        for (let j = 0; j < estatesToProcess.length; j++) {
+          const estate = estatesToProcess[j];
+          const price = this.parsePriceFromEmbedded(estate)!;
+
+          // Fetch full description from detail page
+          this.log(`    [${j + 1}/${estatesToProcess.length}] Fetching details: ${estate.name?.slice(0, 40)}...`);
+          await this.delay();
+          const fullDescription = await this.fetchFullDescription(estate.link);
 
           const cityName = this.getAttributeValue(estate, "citt") || city.name;
           const propertyType = this.getAttributeValue(estate, "tipo-propriet");
@@ -261,7 +313,7 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
             living_area_sqm: size ? parseInt(size, 10) : null,
             property_type: this.inferPropertyType(propertyType),
             image_urls: imageUrls,
-            description_it: estate.excerpt?.replace(/\.\.\.$/, "") || null,
+            description_it: fullDescription || estate.excerpt?.replace(/\.\.\.$/, "") || null,
             listing_url: estate.link,
             has_sea_view: features.hasSeaView || null,
             has_garden: features.hasGarden || null,
