@@ -125,17 +125,44 @@ export class GesticasaScraper extends BaseScraper {
       }
 
       // Extract description from .property-description
+      // The HTML has a nested <div style="text-align: justify;"> inside a <p> (malformed HTML)
+      // Use regex to reliably extract the description text
       let description: string | null = null;
-      const descEl = root.querySelector(".property-description .description");
-      if (descEl) {
-        // Get text content, clean up HTML entities and whitespace
-        description = descEl.textContent?.trim() || null;
-        if (description) {
-          description = description
-            .replace(/\s+/g, " ")
-            .replace(/CODICE DI RIFERIMENTO.*$/i, "")
-            .trim();
-        }
+
+      // First try to get the main description from the justify-aligned div
+      const justifyMatch = html.match(/<div[^>]*style=["'][^"']*text-align:\s*justify[^"']*["'][^>]*>([\s\S]*?)<\/div>/i);
+      if (justifyMatch) {
+        description = justifyMatch[1]
+          .replace(/<[^>]+>/g, " ") // Remove HTML tags
+          .replace(/&nbsp;/g, " ")
+          .replace(/&agrave;/g, "à")
+          .replace(/&egrave;/g, "è")
+          .replace(/&igrave;/g, "ì")
+          .replace(/&ograve;/g, "ò")
+          .replace(/&ugrave;/g, "ù")
+          .replace(/&Egrave;/g, "È")
+          .replace(/&amp;/g, "&")
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&rsquo;/g, "'")
+          .replace(/&lsquo;/g, "'")
+          .replace(/\s+/g, " ")
+          .replace(/CODICE DI RIFERIMENTO.*$/i, "")
+          .trim();
+      }
+
+      // Also get the title/headline from the bold span
+      let headline: string | null = null;
+      const headlineMatch = html.match(/<span[^>]*font-weight:\s*bold[^>]*>([\s\S]*?)<\/span>/i);
+      if (headlineMatch) {
+        headline = headlineMatch[1].replace(/<[^>]+>/g, "").trim();
+      }
+
+      // Combine headline and description if both exist
+      if (headline && description) {
+        description = `${headline} - ${description}`;
+      } else if (headline && !description) {
+        description = headline;
       }
 
       // Extract image URLs
