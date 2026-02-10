@@ -88,8 +88,9 @@ export async function getPropertiesByRegion(
       conditions.push(`p.has_garden = true`);
     }
 
-    // Determine sort order (default to most recently updated)
-    let orderBy = "p.updated_at DESC";
+    // Determine sort order (default to most recently updated on source)
+    // COALESCE ensures properties without source_updated_at gracefully fall back to updated_at
+    let orderBy = "COALESCE(p.source_updated_at, p.updated_at) DESC";
     if (filters?.sort === "price_asc") {
       orderBy = "p.price_eur ASC";
     } else if (filters?.sort === "price_desc") {
@@ -108,6 +109,8 @@ export async function getPropertiesByRegion(
       region_slug: string;
       latitude: number | null;
       longitude: number | null;
+      source_updated_at: Date | null;
+      updated_at: Date;
     }>(
       `SELECT
         p.id,
@@ -120,6 +123,8 @@ export async function getPropertiesByRegion(
         p.image_urls,
         p.latitude,
         p.longitude,
+        p.source_updated_at,
+        p.updated_at,
         r.slug as region_slug
       FROM properties p
       JOIN regions r ON p.region_id = r.id
@@ -142,6 +147,8 @@ export async function getPropertiesByRegion(
       region_slug: row.region_slug,
       latitude: row.latitude,
       longitude: row.longitude,
+      source_updated_at: row.source_updated_at,
+      updated_at: row.updated_at,
     }));
   } catch (error) {
     console.error("Error fetching properties:", error);

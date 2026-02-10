@@ -84,10 +84,10 @@ async function insertProperty(property: PropertyInsert): Promise<Property | null
     const result = await queryOne<Property>(
       `INSERT INTO properties (
         region_id, source_id, city, price_eur, bedrooms, bathrooms,
-        living_area_sqm, property_type, image_urls, description_it,
+        living_area_sqm, property_type, image_urls, description_it, description_en,
         listing_url, has_garden, has_terrace, has_balcony, has_parking, has_garage,
-        last_seen_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CURRENT_TIMESTAMP)
+        source_updated_at, last_seen_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, CURRENT_TIMESTAMP)
       ON CONFLICT (listing_url) DO UPDATE SET
         price_eur = EXCLUDED.price_eur,
         bedrooms = COALESCE(EXCLUDED.bedrooms, properties.bedrooms),
@@ -95,11 +95,13 @@ async function insertProperty(property: PropertyInsert): Promise<Property | null
         living_area_sqm = COALESCE(EXCLUDED.living_area_sqm, properties.living_area_sqm),
         image_urls = EXCLUDED.image_urls,
         description_it = EXCLUDED.description_it,
+        description_en = COALESCE(EXCLUDED.description_en, properties.description_en),
         has_garden = COALESCE(EXCLUDED.has_garden, properties.has_garden),
         has_terrace = COALESCE(EXCLUDED.has_terrace, properties.has_terrace),
         has_balcony = COALESCE(EXCLUDED.has_balcony, properties.has_balcony),
         has_parking = COALESCE(EXCLUDED.has_parking, properties.has_parking),
         has_garage = COALESCE(EXCLUDED.has_garage, properties.has_garage),
+        source_updated_at = COALESCE(EXCLUDED.source_updated_at, properties.source_updated_at),
         last_seen_at = CURRENT_TIMESTAMP,
         updated_at = CURRENT_TIMESTAMP
       RETURNING *`,
@@ -114,12 +116,14 @@ async function insertProperty(property: PropertyInsert): Promise<Property | null
         property.property_type,
         JSON.stringify(property.image_urls || []),
         property.description_it,
+        property.description_en || null,
         property.listing_url,
         property.has_garden ?? null,
         property.has_terrace ?? null,
         property.has_balcony ?? null,
         property.has_parking ?? null,
         property.has_garage ?? null,
+        property.source_updated_at || null,
       ]
     );
     return result;

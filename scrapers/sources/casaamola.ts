@@ -71,6 +71,38 @@ export class CasaAmolaScraper extends BaseScraper {
   }
 
   /**
+   * Extract date from WordPress upload paths
+   *
+   * WordPress organizes uploads by year/month:
+   * - /uploads/2025/12/FOTO1-660x600.png
+   * - /wp-content/uploads/2026/01/image.jpg
+   *
+   * Returns the latest date found (month-level precision)
+   */
+  private extractDateFromImagePaths(imageUrls: string[]): Date | null {
+    // Pattern matches: /uploads/YYYY/MM/
+    const pattern = /uploads\/(\d{4})\/(\d{2})\//;
+
+    let latestDate: Date | null = null;
+
+    for (const url of imageUrls) {
+      const match = url.match(pattern);
+      if (match) {
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        // Use day 28 as a safe "end of month" approximation
+        const date = new Date(year, month - 1, 28);
+
+        if (!isNaN(date.getTime()) && (!latestDate || date > latestDate)) {
+          latestDate = date;
+        }
+      }
+    }
+
+    return latestDate;
+  }
+
+  /**
    * Extract city from location text
    * Format: "Contrada Brenca, Mola di Bari" or "Via Roma, Conversano"
    * We want the city name (usually after the comma)
@@ -292,6 +324,13 @@ export class CasaAmolaScraper extends BaseScraper {
 
       this.log(`    Found ${imageUrls.length} images`);
 
+      // Extract date from WordPress upload paths (month-level precision)
+      const sourceUpdatedAt = this.extractDateFromImagePaths(imageUrls);
+
+      // Translate description to English
+      this.log(`    Translating description...`);
+      const descriptionEn = await this.translateDescription(detailData.fullDescription);
+
       const property: PropertyInsert = {
         region_id: regionId,
         source_id: sourceId,
@@ -303,12 +342,14 @@ export class CasaAmolaScraper extends BaseScraper {
         property_type: this.inferPropertyType(raw.title, raw.propertyType),
         image_urls: imageUrls,
         description_it: detailData.fullDescription || null,
+        description_en: descriptionEn,
         listing_url: raw.url,
         has_garden: detailData.hasGarden || null,
         has_terrace: detailData.hasTerrace || null,
         has_balcony: detailData.hasBalcony || null,
         has_parking: detailData.hasParking || detailData.hasGarage || null,
         has_garage: detailData.hasGarage || (this.parseNumeric(raw.garageText) ? true : null),
+        source_updated_at: sourceUpdatedAt,
       };
 
       properties.push(property);

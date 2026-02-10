@@ -40,12 +40,12 @@ const BATHROOM_OPTIONS = [
 
 const PROPERTY_TYPES = [
   { label: "All Types", value: "" },
-  { label: "Appartamento", value: "apartment" },
+  { label: "Apartment", value: "apartment" },
   { label: "Villa", value: "villa" },
-  { label: "Casale", value: "farmhouse" },
-  { label: "Casa a Schiera", value: "townhouse" },
-  { label: "Attico", value: "penthouse" },
-  { label: "Terreno", value: "land" },
+  { label: "Farmhouse", value: "farmhouse" },
+  { label: "Townhouse", value: "townhouse" },
+  { label: "Penthouse", value: "penthouse" },
+  { label: "Land", value: "land" },
 ];
 
 const SIZE_RANGES = [

@@ -6,6 +6,7 @@
  */
 
 import Link from "next/link";
+import Image from "next/image";
 import { getRegionsWithCounts } from "@/lib/properties";
 
 /**
@@ -21,6 +22,7 @@ const regionShowcase = [
       "From the vineyards of Chianti to the medieval towers of San Gimignano, Tuscany offers timeless Italian beauty and world-renowned art.",
     gradient: "from-[#C4633A] to-[#A34E2B]",
     accentColor: "var(--color-terracotta)",
+    image: "/images/regions/tuscany.jpg",
   },
   {
     slug: "calabria",
@@ -31,6 +33,7 @@ const regionShowcase = [
       "Crystal-clear waters, ancient Greek ruins, and authentic southern Italian culture await in this hidden gem of the Mediterranean.",
     gradient: "from-[#5C6B4A] to-[#4A5639]",
     accentColor: "var(--color-olive)",
+    image: "/images/regions/calabria.jpg",
   },
   {
     slug: "puglia",
@@ -41,6 +44,7 @@ const regionShowcase = [
       "Discover trulli houses, baroque architecture, and endless coastline in Italy's sun-drenched heel.",
     gradient: "from-[#8B2942] to-[#6B1F33]",
     accentColor: "var(--color-burgundy)",
+    image: "/images/regions/puglia.jpg",
   },
 ];
 
@@ -175,12 +179,18 @@ export default async function HomePage() {
                   <div
                     className={`relative lg:w-2/5 aspect-[16/10] lg:aspect-auto bg-gradient-to-br ${region.gradient}`}
                   >
-                    {/* Pattern overlay */}
+                    {/* Region Image */}
+                    <Image
+                      src={region.image}
+                      alt={`${region.name} region landscape`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 40vw"
+                    />
+
+                    {/* Gradient overlay for text readability */}
                     <div
-                      className="absolute inset-0 opacity-20"
-                      style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                      }}
+                      className="absolute inset-0 bg-gradient-to-br from-black/40 to-black/20"
                     />
 
                     {/* Region Number */}
@@ -191,7 +201,7 @@ export default async function HomePage() {
                     {/* Italian name */}
                     <div className="absolute bottom-6 left-6 right-6">
                       <span className="font-display text-5xl lg:text-6xl font-medium text-white/90 tracking-tight">
-                        {region.italian}
+                        {region.name}
                       </span>
                     </div>
 
@@ -230,7 +240,10 @@ export default async function HomePage() {
                     </div>
 
                     {/* Region Name */}
-                    <h3 className="font-display text-3xl lg:text-4xl text-[var(--color-text)] mb-4 group-hover:text-[var(--color-terracotta)] transition-colors duration-300">
+                    <h3
+                      className="font-display text-3xl lg:text-4xl mb-4"
+                      style={{ color: region.accentColor }}
+                    >
                       {region.name}
                     </h3>
 

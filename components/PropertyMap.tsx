@@ -32,14 +32,14 @@ interface PropertyMapProps {
   enableClustering?: boolean;
 }
 
-// Property type labels
+// Property type labels (English)
 const propertyTypeLabels: Record<string, string> = {
-  apartment: "Appartamento",
+  apartment: "Apartment",
   villa: "Villa",
-  farmhouse: "Casale",
-  townhouse: "Casa a Schiera",
-  penthouse: "Attico",
-  land: "Terreno",
+  farmhouse: "Farmhouse",
+  townhouse: "Townhouse",
+  penthouse: "Penthouse",
+  land: "Land",
 };
 
 // Format price

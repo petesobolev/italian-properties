@@ -66,6 +66,7 @@ CREATE TABLE properties (
     -- Media and content
     image_urls JSONB DEFAULT '[]'::jsonb,       -- Array of image URLs stored as JSON
     description_it TEXT,                        -- Original Italian description
+    description_en TEXT,                        -- Pre-translated English description
 
     -- Property features (extracted from description or listing data)
     has_sea_view BOOLEAN,                       -- Property has a sea view
@@ -90,6 +91,7 @@ CREATE TABLE properties (
 
     -- Timestamps
     last_seen_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,  -- When listing was last verified active
+    source_updated_at TIMESTAMPTZ,                       -- When listing was updated on source website
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -108,6 +110,9 @@ CREATE INDEX idx_properties_region_price ON properties(region_id, price_eur);
 -- Partial indexes for feature filters (only index true values for efficiency)
 CREATE INDEX idx_properties_sea_view ON properties(has_sea_view) WHERE has_sea_view = true;
 CREATE INDEX idx_properties_garden ON properties(has_garden) WHERE has_garden = true;
+
+-- Index for sorting by source update date (NULLS LAST for graceful fallback)
+CREATE INDEX idx_properties_source_updated ON properties(source_updated_at DESC NULLS LAST);
 
 -- ============================================================================
 -- SEED DATA

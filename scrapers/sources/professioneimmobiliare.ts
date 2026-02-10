@@ -27,6 +27,19 @@ interface CityTaxonomy {
 }
 
 /**
+ * Estate data from WordPress REST API
+ * This provides the `modified` field that embedded JSON lacks
+ */
+interface EstateApiResponse {
+  id: number;
+  date: string;           // Publication date (ISO 8601)
+  modified: string;       // Last modified date (ISO 8601) - THIS IS WHAT WE WANT
+  slug: string;
+  link: string;
+  title: { rendered: string };
+}
+
+/**
  * Estate data embedded in city archive pages
  */
 interface EmbeddedEstate {
@@ -66,6 +79,51 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
   private async getCitiesWithProperties(): Promise<CityTaxonomy[]> {
     const cities = await this.fetchJson<CityTaxonomy[]>("/wp-json/wp/v2/citt?per_page=100");
     return cities.filter(c => c.count > 0);
+  }
+
+  /**
+   * Fetch all estates from WordPress REST API with pagination
+   * Returns a map of estate ID to modified date for quick lookup
+   */
+  private async fetchEstateModifiedDates(): Promise<Map<number, Date>> {
+    const modifiedDates = new Map<number, Date>();
+    let page = 1;
+    let hasMore = true;
+
+    this.log("Fetching estate modified dates from REST API...");
+
+    while (hasMore) {
+      try {
+        const url = `/wp-json/wp/v2/estate?per_page=100&page=${page}`;
+        const estates = await this.fetchJson<EstateApiResponse[]>(url);
+
+        if (estates.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        for (const estate of estates) {
+          modifiedDates.set(estate.id, new Date(estate.modified));
+        }
+
+        this.log(`  Page ${page}: fetched ${estates.length} estate dates`);
+        page++;
+
+        // Safety limit to avoid infinite loops
+        if (page > 50) {
+          this.log("  Reached safety limit of 50 pages");
+          break;
+        }
+
+        await this.delay();
+      } catch (error) {
+        // WordPress returns 400 when page is out of range
+        hasMore = false;
+      }
+    }
+
+    this.log(`  Total: ${modifiedDates.size} estate modified dates fetched`);
+    return modifiedDates;
   }
 
   /**
@@ -249,6 +307,10 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
   ): Promise<PropertyInsert[]> {
     this.log(`Starting scrape for region: ${regionSlug}`);
 
+    // First, fetch all modified dates from REST API
+    // This gives us exact timestamps for when listings were updated
+    const modifiedDates = await this.fetchEstateModifiedDates();
+
     // Get cities with properties
     this.log("Fetching cities from WordPress API...");
     const cities = await this.getCitiesWithProperties();
@@ -303,6 +365,14 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
           const features = this.extractFeatures(estate);
           const imageUrls = this.getImageUrls(estate);
 
+          // Look up the modified date from REST API data
+          const sourceUpdatedAt = modifiedDates.get(estate.id) || null;
+
+          // Get description and translate to English
+          const descriptionIt = fullDescription || estate.excerpt?.replace(/\.\.\.$/, "") || null;
+          this.log(`    Translating description...`);
+          const descriptionEn = await this.translateDescription(descriptionIt);
+
           const property: PropertyInsert = {
             region_id: regionId,
             source_id: sourceId,
@@ -313,7 +383,8 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
             living_area_sqm: size ? parseInt(size, 10) : null,
             property_type: this.inferPropertyType(propertyType),
             image_urls: imageUrls,
-            description_it: fullDescription || estate.excerpt?.replace(/\.\.\.$/, "") || null,
+            description_it: descriptionIt,
+            description_en: descriptionEn,
             listing_url: estate.link,
             has_sea_view: features.hasSeaView || null,
             has_garden: features.hasGarden || null,
@@ -321,6 +392,7 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
             has_balcony: features.hasBalcony || null,
             has_parking: features.hasParking || features.hasGarage || null,
             has_garage: features.hasGarage || null,
+            source_updated_at: sourceUpdatedAt,
           };
 
           allProperties.push(property);

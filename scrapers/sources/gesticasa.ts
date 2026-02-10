@@ -239,6 +239,35 @@ export class GesticasaScraper extends BaseScraper {
   }
 
   /**
+   * Extract date from WhatsApp image filenames
+   *
+   * Many Gesticasa images are uploaded directly from WhatsApp and retain
+   * the original filename with embedded date, e.g.:
+   * - WhatsApp_Image_2026_01_30_at_09.48.15.jpeg
+   * - WhatsApp Image 2026-01-30
+   *
+   * Returns the latest date found (indicating most recent listing activity)
+   */
+  private extractDateFromImageFilenames(imageUrls: string[]): Date | null {
+    // Pattern matches: WhatsApp_Image_YYYY_MM_DD or WhatsApp Image YYYY-MM-DD
+    const pattern = /WhatsApp[_\s]Image[_\s](\d{4})[_-](\d{2})[_-](\d{2})/i;
+
+    let latestDate: Date | null = null;
+
+    for (const url of imageUrls) {
+      const match = url.match(pattern);
+      if (match) {
+        const date = new Date(`${match[1]}-${match[2]}-${match[3]}`);
+        if (!isNaN(date.getTime()) && (!latestDate || date > latestDate)) {
+          latestDate = date;
+        }
+      }
+    }
+
+    return latestDate;
+  }
+
+  /**
    * Normalize city name for consistency
    */
   private normalizeCityName(name: string): string {
@@ -298,6 +327,13 @@ export class GesticasaScraper extends BaseScraper {
 
       const features = this.extractFeatures(detail.description);
 
+      // Extract date from WhatsApp image filenames (day-level precision)
+      const sourceUpdatedAt = this.extractDateFromImageFilenames(detail.imageUrls);
+
+      // Translate description to English
+      this.log(`  Translating description...`);
+      const descriptionEn = await this.translateDescription(detail.description);
+
       const property: PropertyInsert = {
         region_id: regionId,
         source_id: sourceId,
@@ -309,6 +345,7 @@ export class GesticasaScraper extends BaseScraper {
         property_type: this.inferPropertyType(detail.propertyType),
         image_urls: detail.imageUrls,
         description_it: detail.description,
+        description_en: descriptionEn,
         listing_url: `${this.config.baseUrl}/index.php?action=schedaImmobile&immobile=${propertyId}`,
         has_sea_view: features.hasSeaView || null,
         has_garden: features.hasGarden || null,
@@ -316,6 +353,7 @@ export class GesticasaScraper extends BaseScraper {
         has_balcony: features.hasBalcony || null,
         has_parking: features.hasParking || features.hasGarage || null,
         has_garage: features.hasGarage || null,
+        source_updated_at: sourceUpdatedAt,
       };
 
       allProperties.push(property);

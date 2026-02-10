@@ -42,18 +42,18 @@ function formatDate(date: Date | string): string {
 }
 
 /**
- * Property type display names
+ * Property type display names (English)
  */
 const propertyTypeLabels: Record<string, string> = {
-  apartment: "Appartamento",
+  apartment: "Apartment",
   villa: "Villa",
-  farmhouse: "Casale",
-  townhouse: "Casa a Schiera",
-  penthouse: "Attico",
-  studio: "Monolocale",
-  land: "Terreno",
-  commercial: "Commerciale",
-  other: "Proprietà",
+  farmhouse: "Farmhouse",
+  townhouse: "Townhouse",
+  penthouse: "Penthouse",
+  studio: "Studio",
+  land: "Land",
+  commercial: "Commercial",
+  other: "Property",
 };
 
 /**
@@ -74,11 +74,12 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     notFound();
   }
 
-  const typeLabel = propertyTypeLabels[property.property_type] || "Proprietà";
+  const typeLabel = propertyTypeLabels[property.property_type] || "Property";
   const regionName = regionNames[property.region_slug] || property.region_slug;
 
-  // Translate Italian description to English
-  const description = await translateToEnglish(property.description_it);
+  // Use pre-translated English description, fall back to runtime translation for legacy data
+  const description = property.description_en
+    || await translateToEnglish(property.description_it);
 
   return (
     <div className="min-h-screen bg-[var(--color-stone)]">
@@ -137,6 +138,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               bedrooms={property.bedrooms}
               bathrooms={property.bathrooms}
               livingArea={property.living_area_sqm}
+              priceEur={property.price_eur}
               propertyType={property.property_type}
               hasSeaView={property.has_sea_view}
               hasGarden={property.has_garden}
@@ -262,7 +264,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                         d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    Updated {formatDate(property.updated_at)}
+                    Updated {formatDate(property.source_updated_at || property.updated_at)}
                   </p>
                 </div>
               </div>

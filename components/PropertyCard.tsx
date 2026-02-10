@@ -26,18 +26,45 @@ function formatPrice(price: number): string {
 }
 
 /**
- * Property type display names with Italian flair
+ * Format date as relative time (e.g., "3 days ago", "2 weeks ago")
+ * Shows when the listing was last updated on the source website
+ */
+function formatRelativeDate(date: Date | string | null): string {
+  if (!date) return "";
+
+  const d = typeof date === "string" ? new Date(date) : date;
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} week${weeks !== 1 ? "s" : ""} ago`;
+  }
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return `${months} month${months !== 1 ? "s" : ""} ago`;
+  }
+  const years = Math.floor(diffDays / 365);
+  return `${years} year${years !== 1 ? "s" : ""} ago`;
+}
+
+/**
+ * Property type display names (English)
  */
 const propertyTypeLabels: Record<string, string> = {
-  apartment: "Appartamento",
+  apartment: "Apartment",
   villa: "Villa",
-  farmhouse: "Casale",
-  townhouse: "Casa a Schiera",
-  penthouse: "Attico",
-  studio: "Monolocale",
-  land: "Terreno",
-  commercial: "Commerciale",
-  other: "Proprietà",
+  farmhouse: "Farmhouse",
+  townhouse: "Townhouse",
+  penthouse: "Penthouse",
+  studio: "Studio",
+  land: "Land",
+  commercial: "Commercial",
+  other: "Property",
 };
 
 export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
@@ -50,10 +77,15 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
     living_area_sqm,
     property_type,
     thumbnail_url,
+    source_updated_at,
+    updated_at,
   } = property;
 
   const typeLabel = propertyTypeLabels[property_type] || "Proprietà";
   const staggerClass = `stagger-${Math.min(index + 1, 9)}`;
+
+  // Use source_updated_at with fallback to updated_at
+  const relativeDate = formatRelativeDate(source_updated_at || updated_at);
 
   return (
     <Link
@@ -137,8 +169,15 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
           </span>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-[var(--color-sand)] mb-3" />
+        {/* Updated date and divider */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="h-px bg-[var(--color-sand)] flex-1" />
+          {relativeDate && (
+            <span className="text-xs text-[var(--color-text-light)] px-3 whitespace-nowrap">
+              {relativeDate}
+            </span>
+          )}
+        </div>
 
         {/* Features */}
         <div className="flex items-center gap-5 text-sm text-[var(--color-text-muted)]">

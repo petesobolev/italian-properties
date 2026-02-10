@@ -197,7 +197,7 @@ export default async function RegionPage({ params, searchParams }: RegionPagePro
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar - Always visible for UI preview */}
           <div className="lg:w-72 flex-shrink-0">
-            <div className="lg:sticky lg:top-24">
+            <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto scrollbar-thin">
               <Suspense fallback={<FiltersSkeleton />}>
                 <PropertyFilters />
               </Suspense>

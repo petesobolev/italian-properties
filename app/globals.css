@@ -268,6 +268,34 @@ h4 { font-size: 1.25rem; }
   background: var(--color-text-light);
 }
 
+/* Thin scrollbar for sidebar filters */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  -webkit-appearance: none; /* Force scrollbar visibility in Safari */
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--color-stone-dark);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-sand);
+  border-radius: 3px;
+  border: none;
+  min-height: 40px; /* Ensure thumb is always grabbable */
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-light);
+}
+
+/* Firefox thin scrollbar support */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-sand) var(--color-stone-dark);
+}
+
 /* ============================================================================
    FOCUS STATES (Accessibility)
    ============================================================================ */

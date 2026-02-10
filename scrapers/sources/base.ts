@@ -14,6 +14,7 @@
 
 import https from "https";
 import { parse, HTMLElement } from "node-html-parser";
+import { translate } from "@vitalets/google-translate-api";
 import { Scraper, ScraperSourceConfig } from "../types";
 import { PropertyInsert } from "@/types";
 
@@ -126,6 +127,45 @@ export abstract class BaseScraper implements Scraper {
    */
   protected logError(message: string, error?: unknown): void {
     console.error(`[${this.config.name}] ERROR: ${message}`, error || "");
+  }
+
+  /**
+   * Translate Italian text to English
+   *
+   * Uses a longer delay (2.5s) between translations to avoid rate limiting.
+   * Returns null if translation fails (the Italian text is still preserved).
+   *
+   * @param italianText - The Italian text to translate
+   * @returns The English translation, or null if translation fails/skipped
+   */
+  protected async translateDescription(
+    italianText: string | null | undefined
+  ): Promise<string | null> {
+    if (!italianText || italianText.trim().length === 0) {
+      return null;
+    }
+
+    try {
+      // Add a longer delay before translation to avoid rate limiting
+      // Using 5 seconds to be conservative with the free API
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      const result = await translate(italianText, {
+        from: "it",
+        to: "en",
+      });
+
+      return result.text;
+    } catch (error) {
+      // Log but don't fail - we still have the Italian text
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("Too Many Requests")) {
+        this.log("    ⚠ Translation rate limited - skipping");
+      } else {
+        this.log(`    ⚠ Translation failed: ${errorMessage.slice(0, 50)}`);
+      }
+      return null;
+    }
   }
 
   /**

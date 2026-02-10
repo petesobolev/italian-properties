@@ -48,7 +48,26 @@ interface DetailPageData {
 export class VittoriScraper extends BaseScraper {
   readonly config: ScraperSourceConfig = SOURCES.vittori;
 
-  private readonly listingsPath = "/it/immobili-in-vendita";
+  // Use order_by=insert_ts_desc to sort by "Più recente" (most recent)
+  private readonly listingsPath = "/it/immobili-in-vendita?order_by=insert_ts_desc";
+
+  /**
+   * Generate timestamps that preserve scrape order
+   *
+   * We request listings sorted by "Più recente" (most recent) via the
+   * order_by=insert_ts_desc parameter. Since the website doesn't expose
+   * actual timestamps in the HTML, we preserve this recency order by
+   * assigning timestamps based on scrape position:
+   * - First property (most recent on source) gets current time
+   * - Each subsequent property gets a timestamp 1 minute earlier
+   *
+   * This ensures properties maintain their relative recency from the source.
+   */
+  private generateOrderedTimestamp(index: number): Date {
+    const now = new Date();
+    // Subtract index minutes from current time
+    return new Date(now.getTime() - index * 60 * 1000);
+  }
 
   /**
    * Extract city name from listing title
@@ -255,13 +274,15 @@ export class VittoriScraper extends BaseScraper {
 
   /**
    * Build URL for a specific page
+   * Appends page parameter while preserving the order_by sort parameter
    */
   private buildPageUrl(pageNum: number): string {
     const baseListingsUrl = `${this.config.baseUrl}${this.listingsPath}`;
     if (pageNum === 1) {
       return baseListingsUrl;
     }
-    return `${baseListingsUrl}?page=${pageNum}`;
+    // listingsPath already has ?order_by=..., so use & for additional params
+    return `${baseListingsUrl}&page=${pageNum}`;
   }
 
   /**
@@ -297,6 +318,14 @@ export class VittoriScraper extends BaseScraper {
 
       this.log(`    Found ${imageUrls.length} images`);
 
+      // Generate timestamp based on scrape order to preserve website's recency order
+      const sourceUpdatedAt = this.generateOrderedTimestamp(i);
+
+      // Translate description to English
+      const descriptionIt = detailData.fullDescription || raw.description || null;
+      this.log(`    Translating description...`);
+      const descriptionEn = await this.translateDescription(descriptionIt);
+
       const property: PropertyInsert = {
         region_id: regionId,
         source_id: sourceId,
@@ -307,7 +336,8 @@ export class VittoriScraper extends BaseScraper {
         living_area_sqm: this.parseNumeric(raw.sqmText),
         property_type: this.inferPropertyType(raw.title),
         image_urls: imageUrls,
-        description_it: detailData.fullDescription || raw.description || null,
+        description_it: descriptionIt,
+        description_en: descriptionEn,
         listing_url: raw.url,
         // Add extracted features
         has_garden: detailData.hasGarden || null,
@@ -315,6 +345,7 @@ export class VittoriScraper extends BaseScraper {
         has_balcony: detailData.hasBalcony || null,
         has_parking: detailData.hasParking || null,
         has_garage: detailData.hasGarage || null,
+        source_updated_at: sourceUpdatedAt,
       };
 
       properties.push(property);

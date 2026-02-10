@@ -9,6 +9,7 @@ interface PropertyFeaturesProps {
   bedrooms: number | null;
   bathrooms: number | null;
   livingArea: number | null;
+  priceEur: number;
   propertyType: string;
   hasSeaView?: boolean | null;
   hasGarden?: boolean | null;
@@ -29,24 +30,25 @@ interface PropertyFeaturesProps {
 }
 
 /**
- * Property type display names
+ * Property type display names (English)
  */
 const propertyTypeLabels: Record<string, string> = {
-  apartment: "Appartamento",
+  apartment: "Apartment",
   villa: "Villa",
-  farmhouse: "Casale",
-  townhouse: "Casa a Schiera",
-  penthouse: "Attico",
-  studio: "Monolocale",
-  land: "Terreno",
-  commercial: "Commerciale",
-  other: "Proprietà",
+  farmhouse: "Farmhouse",
+  townhouse: "Townhouse",
+  penthouse: "Penthouse",
+  studio: "Studio",
+  land: "Land",
+  commercial: "Commercial",
+  other: "Property",
 };
 
 export function PropertyFeatures({
   bedrooms,
   bathrooms,
   livingArea,
+  priceEur,
   propertyType,
   hasSeaView,
   hasGarden,
@@ -65,7 +67,7 @@ export function PropertyFeatures({
   yearBuilt,
   energyClass,
 }: PropertyFeaturesProps) {
-  const typeLabel = propertyTypeLabels[propertyType] || "Proprietà";
+  const typeLabel = propertyTypeLabels[propertyType] || "Property";
 
   // Build list of main features to display
   const features = [
@@ -73,43 +75,49 @@ export function PropertyFeatures({
       icon: <BedroomIcon />,
       label: "Bedrooms",
       value: bedrooms.toString(),
-      sublabel: bedrooms === 1 ? "Camera" : "Camere",
+      sublabel: bedrooms === 1 ? "Bedroom" : "Bedrooms",
     },
     bathrooms !== null && {
       icon: <BathroomIcon />,
       label: "Bathrooms",
       value: bathrooms.toString(),
-      sublabel: bathrooms === 1 ? "Bagno" : "Bagni",
+      sublabel: bathrooms === 1 ? "Bathroom" : "Bathrooms",
     },
     livingArea !== null && {
       icon: <AreaIcon />,
       label: "Living Area",
       value: `${livingArea} m²`,
-      sublabel: "Superficie",
+      sublabel: "Living Area",
+    },
+    livingArea !== null && livingArea > 0 && {
+      icon: <EuroIcon />,
+      label: "Price per m²",
+      value: `€${Math.round(priceEur / livingArea).toLocaleString("it-IT")}`,
+      sublabel: "per m²",
     },
     {
       icon: <PropertyTypeIcon />,
       label: "Property Type",
       value: typeLabel,
-      sublabel: "Tipologia",
+      sublabel: "Type",
     },
     floorNumber !== null && floorNumber !== undefined && {
       icon: <FloorIcon />,
       label: "Floor",
       value: floorNumber === 0 ? "Ground" : floorNumber.toString(),
-      sublabel: floorNumber === 0 ? "Piano Terra" : "Piano",
+      sublabel: floorNumber === 0 ? "Ground Floor" : "Floor",
     },
     yearBuilt !== null && yearBuilt !== undefined && {
       icon: <YearIcon />,
       label: "Year Built",
       value: yearBuilt.toString(),
-      sublabel: "Anno",
+      sublabel: "Year Built",
     },
     energyClass && {
       icon: <EnergyIcon />,
       label: "Energy Class",
       value: energyClass,
-      sublabel: "Classe Energetica",
+      sublabel: "Energy Class",
     },
   ].filter(Boolean) as Array<{
     icon: React.ReactNode;
@@ -124,88 +132,74 @@ export function PropertyFeatures({
     hasSeaView && {
       icon: <SeaViewIcon />,
       label: "Sea View",
-      labelIt: "Vista Mare",
       category: "view",
     },
     hasMountainView && {
       icon: <MountainViewIcon />,
       label: "Mountain View",
-      labelIt: "Vista Montagna",
       category: "view",
     },
     hasPanoramicView && {
       icon: <PanoramicViewIcon />,
       label: "Panoramic View",
-      labelIt: "Vista Panoramica",
       category: "view",
     },
     // Outdoor
     hasGarden && {
       icon: <GardenIcon />,
       label: "Garden",
-      labelIt: "Giardino",
       category: "outdoor",
     },
     hasPool && {
       icon: <PoolIcon />,
       label: "Pool",
-      labelIt: "Piscina",
       category: "outdoor",
     },
     hasTerrace && {
       icon: <TerraceIcon />,
       label: "Terrace",
-      labelIt: "Terrazza",
       category: "outdoor",
     },
     hasBalcony && {
       icon: <BalconyIcon />,
       label: "Balcony",
-      labelIt: "Balcone",
       category: "outdoor",
     },
     // Parking
     hasParking && {
       icon: <ParkingIcon />,
       label: "Parking",
-      labelIt: "Parcheggio",
       category: "parking",
     },
     hasGarage && {
       icon: <GarageIcon />,
       label: "Garage",
-      labelIt: "Garage",
       category: "parking",
     },
     // Amenities
     hasFireplace && {
       icon: <FireplaceIcon />,
       label: "Fireplace",
-      labelIt: "Camino",
       category: "amenity",
     },
     hasAirConditioning && {
       icon: <AirConditioningIcon />,
       label: "A/C",
-      labelIt: "Aria Condizionata",
       category: "amenity",
     },
     hasElevator && {
       icon: <ElevatorIcon />,
       label: "Elevator",
-      labelIt: "Ascensore",
       category: "amenity",
     },
     isRenovated && {
       icon: <RenovatedIcon />,
       label: "Renovated",
-      labelIt: "Ristrutturato",
       category: "amenity",
     },
   ].filter(Boolean) as Array<{
     icon: React.ReactNode;
     label: string;
-    labelIt: string;
     category: string;
   }>;
 
@@ -251,9 +245,6 @@ export function PropertyFeatures({
                 <span className="text-[var(--color-olive)]">{feature.icon}</span>
                 <span className="text-sm font-medium text-[var(--color-olive-dark)]">
                   {feature.label}
-                </span>
-                <span className="text-xs text-[var(--color-olive)]">
-                  ({feature.labelIt})
                 </span>
               </div>
             ))}
@@ -314,6 +305,24 @@ function AreaIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
+      />
+    </svg>
+  );
+}
+
+function EuroIcon() {
+  return (
+    <svg
+      className="w-5 h-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M14.25 7.756a4.5 4.5 0 100 8.488M7.5 10.5H5.25m2.25 3H5.25M9 10.5h3.75M9 13.5h3.75"
       />
     </svg>
   );

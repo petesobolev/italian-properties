@@ -89,10 +89,12 @@ export interface Property {
   property_type: PropertyType;
   image_urls: string[];          // Stored as JSONB in PostgreSQL
   description_it: string | null;
+  description_en: string | null; // Pre-translated English description
   listing_url: string;           // Unique - used for deduplication
   has_sea_view: boolean | null;  // Nullable - extracted from description
   has_garden: boolean | null;    // Nullable - extracted from description
   last_seen_at: Date;
+  source_updated_at: Date | null;  // When listing was updated on source website
   created_at: Date;
   updated_at: Date;
 }
@@ -111,6 +113,7 @@ export interface PropertyInsert {
   property_type: PropertyType;
   image_urls?: string[];
   description_it?: string | null;
+  description_en?: string | null; // Pre-translated English description
   listing_url: string;
   // Feature flags - extracted from listings
   has_sea_view?: boolean | null;
@@ -119,6 +122,8 @@ export interface PropertyInsert {
   has_balcony?: boolean | null;
   has_parking?: boolean | null;
   has_garage?: boolean | null;
+  // Source tracking
+  source_updated_at?: Date | string | null;  // When listing was updated on source website
 }
 
 /**
@@ -168,6 +173,8 @@ export interface PropertySummary {
   region_slug: string;
   latitude: number | null;       // For map display
   longitude: number | null;      // For map display
+  source_updated_at: Date | null;  // When listing was updated on source website
+  updated_at: Date;                // For fallback when source_updated_at is null
 }
 
 // ============================================================================
