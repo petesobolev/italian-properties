@@ -80,7 +80,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                 aria-label="Previous image"
               >
                 <svg
-                  className="w-5 h-5 text-[var(--color-text)]"
+                  className="w-5 h-5 text-gray-800"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -99,7 +99,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                 aria-label="Next image"
               >
                 <svg
-                  className="w-5 h-5 text-[var(--color-text)]"
+                  className="w-5 h-5 text-gray-800"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -122,7 +122,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
             aria-label="View fullscreen"
           >
             <svg
-              className="w-5 h-5 text-[var(--color-text)]"
+              className="w-5 h-5 text-gray-800"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

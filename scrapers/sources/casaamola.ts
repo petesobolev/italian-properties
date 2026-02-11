@@ -331,6 +331,15 @@ export class CasaAmolaScraper extends BaseScraper {
       this.log(`    Translating description...`);
       const descriptionEn = await this.translateDescription(detailData.fullDescription);
 
+      // Extract living area: prefer description-based (actual living area) over listed total
+      const listedArea = this.parseNumeric(raw.sqmText);
+      const livingAreaFromDesc = this.extractLivingAreaFromDescription(detailData.fullDescription);
+      const livingArea = livingAreaFromDesc ?? listedArea;
+
+      if (livingAreaFromDesc && listedArea && livingAreaFromDesc < listedArea) {
+        this.log(`    Living area: ${livingAreaFromDesc} mq (from description, listed: ${listedArea} mq)`);
+      }
+
       const property: PropertyInsert = {
         region_id: regionId,
         source_id: sourceId,
@@ -338,7 +347,7 @@ export class CasaAmolaScraper extends BaseScraper {
         price_eur: price,
         bedrooms: this.parseNumeric(raw.bedroomsText),
         bathrooms: this.parseNumeric(raw.bathroomsText),
-        living_area_sqm: this.parseNumeric(raw.sqmText),
+        living_area_sqm: livingArea,
         property_type: this.inferPropertyType(raw.title, raw.propertyType),
         image_urls: imageUrls,
         description_it: detailData.fullDescription || null,

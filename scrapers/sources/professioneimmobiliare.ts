@@ -373,6 +373,15 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
           this.log(`    Translating description...`);
           const descriptionEn = await this.translateDescription(descriptionIt);
 
+          // Extract living area: prefer description-based (actual living area) over listed total
+          const listedArea = size ? parseInt(size, 10) : null;
+          const livingAreaFromDesc = this.extractLivingAreaFromDescription(descriptionIt);
+          const livingArea = livingAreaFromDesc ?? listedArea;
+
+          if (livingAreaFromDesc && listedArea && livingAreaFromDesc < listedArea) {
+            this.log(`    Living area: ${livingAreaFromDesc} mq (from description, listed: ${listedArea} mq)`);
+          }
+
           const property: PropertyInsert = {
             region_id: regionId,
             source_id: sourceId,
@@ -380,7 +389,7 @@ export class ProfessioneImmobiliareScraper extends BaseScraper {
             price_eur: price,
             bedrooms: bedrooms ? parseInt(bedrooms, 10) : null,
             bathrooms: bathrooms ? parseInt(bathrooms, 10) : null,
-            living_area_sqm: size ? parseInt(size, 10) : null,
+            living_area_sqm: livingArea,
             property_type: this.inferPropertyType(propertyType),
             image_urls: imageUrls,
             description_it: descriptionIt,

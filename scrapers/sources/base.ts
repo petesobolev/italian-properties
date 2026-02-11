@@ -116,6 +116,64 @@ export abstract class BaseScraper implements Scraper {
   }
 
   /**
+   * Extract living area from Italian property description
+   *
+   * Many Italian property listings show a total area (including cellars, garages,
+   * terraces, etc.) but describe a smaller actual living/habitable area in the
+   * description. This method extracts the living area from common Italian patterns.
+   *
+   * Common patterns:
+   * - "superficie abitabile di 130 mq"
+   * - "130 mq abitabili"
+   * - "superficie utile di 120 mq"
+   * - "superficie calpestabile 100 mq"
+   * - "piano abitativo di 150 mq"
+   * - "l'abitazione è di 130 mq"
+   * - "appartamento di 130 mq" (when describing living portion)
+   *
+   * @param description - The Italian property description
+   * @returns The living area in sq.m., or null if not found
+   */
+  protected extractLivingAreaFromDescription(description: string | null): number | null {
+    if (!description) return null;
+
+    const text = description.toLowerCase();
+
+    // Patterns that specifically indicate living/habitable area (ordered by specificity)
+    const livingAreaPatterns = [
+      // "superficie abitabile di 130 mq" or "superficie abitabile 130 mq" or "la superficie abitabile è di 130 mq"
+      /superficie\s+abitabil[ei]\s+(?:è\s+)?(?:di\s+)?(?:circa\s+)?(\d+)\s*(?:mq|m²|metri\s*quadr)/i,
+      // "130 mq abitabili" or "130 mq di superficie abitabile"
+      /(\d+)\s*(?:mq|m²|metri\s*quadr)[i]?\s+(?:di\s+)?(?:superficie\s+)?abitabil/i,
+      // "superficie utile di 120 mq"
+      /superficie\s+utile\s+(?:di\s+)?(?:circa\s+)?(\d+)\s*(?:mq|m²|metri\s*quadr)/i,
+      // "superficie calpestabile 100 mq"
+      /superficie\s+calpestabil[ei]\s+(?:di\s+)?(?:circa\s+)?(\d+)\s*(?:mq|m²|metri\s*quadr)/i,
+      // "piano abitativo di 150 mq"
+      /piano\s+abitativo\s+(?:di\s+)?(?:circa\s+)?(\d+)\s*(?:mq|m²|metri\s*quadr)/i,
+      // "l'abitazione è di 130 mq" or "abitazione di 130 mq"
+      /l['']?abitazione\s+(?:è\s+)?(?:di\s+)?(?:circa\s+)?(\d+)\s*(?:mq|m²|metri\s*quadr)/i,
+      // "interni di 130 mq" or "spazi interni di 130 mq"
+      /(?:spazi\s+)?interni\s+(?:di\s+)?(?:circa\s+)?(\d+)\s*(?:mq|m²|metri\s*quadr)/i,
+      // "zona giorno/notte di X mq" combined - less specific but still indicates living space
+      /(?:zona\s+(?:giorno|notte|living)[^.]*?)\s+(\d+)\s*(?:mq|m²)/i,
+    ];
+
+    for (const pattern of livingAreaPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const area = parseInt(match[1], 10);
+        // Sanity check: living area should be reasonable (10-1000 sq.m.)
+        if (area >= 10 && area <= 1000) {
+          return area;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Log a message with the source name prefix
    */
   protected log(message: string): void {

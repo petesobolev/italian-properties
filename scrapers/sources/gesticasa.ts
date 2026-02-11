@@ -334,6 +334,15 @@ export class GesticasaScraper extends BaseScraper {
       this.log(`  Translating description...`);
       const descriptionEn = await this.translateDescription(detail.description);
 
+      // Extract living area: prefer description-based (actual living area) over listed total
+      const listedArea = detail.sqm;
+      const livingAreaFromDesc = this.extractLivingAreaFromDescription(detail.description);
+      const livingArea = livingAreaFromDesc ?? listedArea;
+
+      if (livingAreaFromDesc && listedArea && livingAreaFromDesc < listedArea) {
+        this.log(`  Living area: ${livingAreaFromDesc} mq (from description, listed: ${listedArea} mq)`);
+      }
+
       const property: PropertyInsert = {
         region_id: regionId,
         source_id: sourceId,
@@ -341,7 +350,7 @@ export class GesticasaScraper extends BaseScraper {
         price_eur: detail.price,
         bedrooms: detail.rooms, // "Locali" in Italian usually means rooms, may include living room
         bathrooms: detail.bathrooms,
-        living_area_sqm: detail.sqm,
+        living_area_sqm: livingArea,
         property_type: this.inferPropertyType(detail.propertyType),
         image_urls: detail.imageUrls,
         description_it: detail.description,
