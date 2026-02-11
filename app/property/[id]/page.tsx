@@ -272,7 +272,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               {/* Back to Region Link */}
               <Link
                 href={`/${property.region_slug}`}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-[var(--color-sand)] rounded-lg text-[var(--color-text)] font-medium hover:border-[var(--color-terracotta)] hover:shadow-sm transition-all duration-200"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 rounded-lg text-white font-medium hover:bg-[var(--color-terracotta)] hover:shadow-sm transition-all duration-200"
               >
                 <svg
                   className="w-4 h-4"
