@@ -58,7 +58,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-[var(--color-text)] text-white overflow-hidden">
+      <section className="hero-fixed relative bg-[var(--color-text)] text-white overflow-hidden">
         {/* Decorative background pattern */}
         <div
           className="absolute inset-0 opacity-5"
@@ -123,7 +123,7 @@ export default async function HomePage() {
         </div>
 
         {/* Decorative wave */}
-        <div className="absolute bottom-0 left-0 right-0">
+        <div className="wave-divider absolute bottom-0 left-0 right-0">
           <svg
             viewBox="0 0 1440 80"
             fill="none"
@@ -193,12 +193,7 @@ export default async function HomePage() {
                       className="absolute inset-0 bg-gradient-to-br from-black/40 to-black/20"
                     />
 
-                    {/* Region Number */}
-                    <div className="absolute top-6 left-6 font-display text-8xl font-bold text-white/10">
-                      0{index + 1}
-                    </div>
-
-                    {/* Italian name */}
+                    {/* Region name */}
                     <div className="absolute bottom-6 left-6 right-6">
                       <span className="font-display text-5xl lg:text-6xl font-medium text-white/90 tracking-tight">
                         {region.name}

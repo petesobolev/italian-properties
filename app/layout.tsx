@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ThemeProvider, ThemeScript } from "@/components/ThemeProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
 
 /**
@@ -21,8 +23,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <ThemeScript />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -49,6 +52,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased">
+        <ThemeProvider>
         {/* Elegant Header */}
         <header className="sticky top-0 z-50 bg-[var(--color-cream)]/95 backdrop-blur-md border-b border-[var(--color-sand)]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -101,27 +105,35 @@ export default function RootLayout({
                 >
                   Puglia
                 </Link>
+                <div className="relative">
+                  <ThemeToggle />
+                </div>
               </nav>
 
-              {/* Mobile menu button */}
-              <button
-                className="md:hidden p-2 rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-stone-dark)] transition-colors"
-                aria-label="Menu"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
+              {/* Mobile actions */}
+              <div className="flex md:hidden items-center gap-2">
+                <div className="relative">
+                  <ThemeToggle />
+                </div>
+                <button
+                  className="p-2 rounded-lg text-[var(--color-text-muted)] hover:bg-[var(--color-stone-dark)] transition-colors"
+                  aria-label="Menu"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </header>
@@ -130,7 +142,7 @@ export default function RootLayout({
         <main className="min-h-[calc(100vh-5rem)]">{children}</main>
 
         {/* Footer */}
-        <footer className="bg-[var(--color-text)] text-[var(--color-stone)]">
+        <footer className="hero-fixed bg-[var(--color-text)] text-[var(--color-stone)]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Brand */}
@@ -199,6 +211,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        </ThemeProvider>
       </body>
     </html>
   );

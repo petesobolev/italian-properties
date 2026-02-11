@@ -321,7 +321,7 @@ function PropertyPopup({ property }: { property: MapProperty }) {
           </span>
         </div>
 
-        <h3 className="font-semibold text-gray-900">{property.city}</h3>
+        <h3 className="font-semibold" style={{ color: "var(--color-text)" }}>{property.city}</h3>
 
         <p
           className="text-lg font-bold"
@@ -331,7 +331,7 @@ function PropertyPopup({ property }: { property: MapProperty }) {
         </p>
 
         {/* Features */}
-        <div className="flex gap-3 text-sm text-gray-600">
+        <div className="flex gap-3 text-sm" style={{ color: "var(--color-text-muted)" }}>
           {property.bedrooms !== null && (
             <span>{property.bedrooms} beds</span>
           )}

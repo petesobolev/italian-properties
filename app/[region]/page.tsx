@@ -124,7 +124,7 @@ export default async function RegionPage({ params, searchParams }: RegionPagePro
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-[var(--color-text)] text-white overflow-hidden">
+      <section className="hero-fixed relative bg-[var(--color-text)] text-white overflow-hidden">
         {/* Background pattern */}
         <div
           className="absolute inset-0 opacity-10"
@@ -176,7 +176,7 @@ export default async function RegionPage({ params, searchParams }: RegionPagePro
         </div>
 
         {/* Decorative wave */}
-        <div className="absolute bottom-0 left-0 right-0">
+        <div className="wave-divider absolute bottom-0 left-0 right-0">
           <svg
             viewBox="0 0 1440 48"
             fill="none"
