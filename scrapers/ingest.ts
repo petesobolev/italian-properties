@@ -187,3 +187,50 @@ export async function getExistingUrls(sourceId: string): Promise<Set<string>> {
   );
   return new Set(results.map((r) => r.listing_url));
 }
+
+/**
+ * Remove stale listings that no longer exist on the source website
+ *
+ * Compares the scraped URLs against existing database entries for a source/region
+ * and deletes any listings that weren't found in the current scrape.
+ *
+ * @param sourceId - Database ID of the source
+ * @param regionId - Database ID of the region
+ * @param scrapedUrls - Set of URLs found in the current scrape
+ * @returns Number of listings removed
+ */
+export async function removeStaleListings(
+  sourceId: string,
+  regionId: string,
+  scrapedUrls: Set<string>
+): Promise<number> {
+  // Get all existing listings for this source/region combination
+  const existing = await queryAll<{ id: string; listing_url: string }>(
+    "SELECT id, listing_url FROM properties WHERE source_id = $1 AND region_id = $2",
+    [sourceId, regionId]
+  );
+
+  // Find listings that are in the database but weren't in the scraped results
+  const staleListings = existing.filter((p) => !scrapedUrls.has(p.listing_url));
+
+  if (staleListings.length === 0) {
+    return 0;
+  }
+
+  // Delete stale listings
+  const staleIds = staleListings.map((p) => p.id);
+  await query(
+    "DELETE FROM properties WHERE id = ANY($1::uuid[])",
+    [staleIds]
+  );
+
+  console.log(`  Removed ${staleListings.length} stale listing(s):`);
+  for (const listing of staleListings.slice(0, 5)) {
+    console.log(`    - ${listing.listing_url}`);
+  }
+  if (staleListings.length > 5) {
+    console.log(`    ... and ${staleListings.length - 5} more`);
+  }
+
+  return staleListings.length;
+}

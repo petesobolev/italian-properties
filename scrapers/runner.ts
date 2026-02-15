@@ -22,6 +22,7 @@ import {
   getOrCreateSource,
   getRegionBySlug,
   ingestProperties,
+  removeStaleListings,
   IngestionResult,
 } from "./ingest";
 import { Region, Source, PropertyInsert } from "@/types";
@@ -34,7 +35,7 @@ async function runScraper(
   region: Region,
   dbSource: Source,
   options: IngestionOptions
-): Promise<{ scraperResult: ScraperResult; ingestionResult?: IngestionResult }> {
+): Promise<{ scraperResult: ScraperResult; ingestionResult?: IngestionResult; staleRemoved: number }> {
   const startedAt = new Date();
   const errors: string[] = [];
 
@@ -71,6 +72,7 @@ async function runScraper(
 
   // Ingest into database (unless dry run)
   let ingestionResult: IngestionResult | undefined;
+  let staleRemoved = 0;
   if (!options.dryRun && properties.length > 0) {
     console.log(`\nIngesting ${properties.length} properties into database...`);
     try {
@@ -82,6 +84,13 @@ async function runScraper(
       console.log(`  New: ${ingestionResult.newListings}`);
       console.log(`  Updated: ${ingestionResult.updatedListings}`);
       console.log(`  Errors: ${ingestionResult.errors}`);
+
+      // Remove stale listings that no longer exist on the source
+      const scrapedUrls = new Set(properties.map((p) => p.listing_url));
+      staleRemoved = await removeStaleListings(dbSource.id, region.id, scrapedUrls);
+      if (staleRemoved > 0) {
+        console.log(`  Removed: ${staleRemoved} stale listing(s)`);
+      }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       errors.push(`Ingestion error: ${errorMsg}`);
@@ -91,7 +100,7 @@ async function runScraper(
     console.log(`\n[DRY RUN] Would ingest ${properties.length} properties`);
   }
 
-  return { scraperResult, ingestionResult };
+  return { scraperResult, ingestionResult, staleRemoved };
 }
 
 /**
@@ -118,6 +127,7 @@ export async function runIngestion(
     totalPropertiesScraped: 0,
     totalNewListings: 0,
     totalUpdatedListings: 0,
+    totalStaleRemoved: 0,
     totalErrors: 0,
   };
 
@@ -178,7 +188,7 @@ export async function runIngestion(
       regionsProcessed.add(regionSlug);
 
       // Run the scraper
-      const { scraperResult, ingestionResult } = await runScraper(
+      const { scraperResult, ingestionResult, staleRemoved } = await runScraper(
         sourceConfig,
         region,
         dbSource,
@@ -188,6 +198,7 @@ export async function runIngestion(
       results.push(scraperResult);
       stats.totalPropertiesScraped += scraperResult.properties.length;
       stats.totalErrors += scraperResult.errors.length;
+      stats.totalStaleRemoved += staleRemoved;
 
       if (ingestionResult) {
         stats.totalNewListings += ingestionResult.newListings;
@@ -212,6 +223,7 @@ export async function runIngestion(
   console.log(`Properties Scraped: ${stats.totalPropertiesScraped}`);
   console.log(`New Listings: ${stats.totalNewListings}`);
   console.log(`Updated Listings: ${stats.totalUpdatedListings}`);
+  console.log(`Stale Removed: ${stats.totalStaleRemoved}`);
   console.log(`Errors: ${stats.totalErrors}`);
   console.log("=".repeat(60));
 
