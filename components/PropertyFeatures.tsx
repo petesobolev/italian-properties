@@ -215,10 +215,10 @@ export function PropertyFeatures({
         {features.map((feature, index) => (
           <div
             key={index}
-            className="bg-white rounded-lg p-4 border border-[var(--color-sand)] text-center"
+            className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-[var(--color-sand)] text-center"
           >
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-stone)] mb-3">
-              <span className="text-[var(--color-olive)]">{feature.icon}</span>
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-stone)] dark:bg-gray-600 mb-3">
+              <span className="text-[var(--color-olive)] dark:text-gray-200">{feature.icon}</span>
             </div>
             <div className="font-display text-xl text-[var(--color-text)] mb-1">
               {feature.value}
@@ -240,10 +240,10 @@ export function PropertyFeatures({
             {specialFeatures.map((feature, index) => (
               <div
                 key={index}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-olive)]/10 rounded-lg border border-[var(--color-olive)]/20"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-olive)]/10 dark:bg-gray-700 rounded-lg border border-[var(--color-olive)]/20 dark:border-gray-600"
               >
-                <span className="text-[var(--color-olive)]">{feature.icon}</span>
-                <span className="text-sm font-medium text-[var(--color-olive-dark)]">
+                <span className="text-[var(--color-olive)] dark:text-gray-200">{feature.icon}</span>
+                <span className="text-sm font-medium text-[var(--color-olive-dark)] dark:text-gray-200">
                   {feature.label}
                 </span>
               </div>
