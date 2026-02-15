@@ -54,7 +54,7 @@ export const SOURCES: Record<string, ScraperSourceConfig> = {
     name: "Professione Immobiliare Italia",
     baseUrl: "https://www.professioneimmobiliareitalia.it",
     regions: ["calabria"],
-    isActive: true,
+    isActive: false, // Disabled - infrastructure kept for potential future use
     maxPages: 50, // Many cities to iterate through
     requestDelayMs: 1500, // Be respectful with delays
   },
