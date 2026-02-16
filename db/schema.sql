@@ -89,6 +89,10 @@ CREATE TABLE properties (
     -- Source tracking
     listing_url VARCHAR(1000) UNIQUE NOT NULL,  -- Original listing URL (used for deduplication)
 
+    -- Archive status (soft delete for stale listings)
+    is_archived BOOLEAN DEFAULT false,          -- Whether listing is archived (no longer on source)
+    archived_at TIMESTAMPTZ,                    -- When listing was archived
+
     -- Timestamps
     last_seen_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,  -- When listing was last verified active
     source_updated_at TIMESTAMPTZ,                       -- When listing was updated on source website
@@ -113,6 +117,10 @@ CREATE INDEX idx_properties_garden ON properties(has_garden) WHERE has_garden = 
 
 -- Index for sorting by source update date (NULLS LAST for graceful fallback)
 CREATE INDEX idx_properties_source_updated ON properties(source_updated_at DESC NULLS LAST);
+
+-- Indexes for archive functionality
+CREATE INDEX idx_properties_is_archived ON properties(is_archived);
+CREATE INDEX idx_properties_archived ON properties(archived_at DESC) WHERE is_archived = true;
 
 -- ============================================================================
 -- SEED DATA

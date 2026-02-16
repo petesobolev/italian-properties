@@ -189,24 +189,25 @@ export async function getExistingUrls(sourceId: string): Promise<Set<string>> {
 }
 
 /**
- * Remove stale listings that no longer exist on the source website
+ * Archive stale listings that no longer exist on the source website
  *
  * Compares the scraped URLs against existing database entries for a source/region
- * and deletes any listings that weren't found in the current scrape.
+ * and archives any listings that weren't found in the current scrape.
+ * Archived listings can be viewed on the archived listings page.
  *
  * @param sourceId - Database ID of the source
  * @param regionId - Database ID of the region
  * @param scrapedUrls - Set of URLs found in the current scrape
- * @returns Number of listings removed
+ * @returns Number of listings archived
  */
 export async function removeStaleListings(
   sourceId: string,
   regionId: string,
   scrapedUrls: Set<string>
 ): Promise<number> {
-  // Get all existing listings for this source/region combination
+  // Get all existing active listings for this source/region combination
   const existing = await queryAll<{ id: string; listing_url: string }>(
-    "SELECT id, listing_url FROM properties WHERE source_id = $1 AND region_id = $2",
+    "SELECT id, listing_url FROM properties WHERE source_id = $1 AND region_id = $2 AND (is_archived = false OR is_archived IS NULL)",
     [sourceId, regionId]
   );
 
@@ -217,14 +218,14 @@ export async function removeStaleListings(
     return 0;
   }
 
-  // Delete stale listings
+  // Archive stale listings (soft delete)
   const staleIds = staleListings.map((p) => p.id);
   await query(
-    "DELETE FROM properties WHERE id = ANY($1::uuid[])",
+    "UPDATE properties SET is_archived = true, archived_at = CURRENT_TIMESTAMP WHERE id = ANY($1::uuid[])",
     [staleIds]
   );
 
-  console.log(`  Removed ${staleListings.length} stale listing(s):`);
+  console.log(`  Archived ${staleListings.length} stale listing(s):`);
   for (const listing of staleListings.slice(0, 5)) {
     console.log(`    - ${listing.listing_url}`);
   }
@@ -233,4 +234,17 @@ export async function removeStaleListings(
   }
 
   return staleListings.length;
+}
+
+/**
+ * Restore an archived listing (un-archive)
+ *
+ * Call this if a listing reappears on the source website.
+ */
+export async function restoreArchivedListing(listingUrl: string): Promise<boolean> {
+  const result = await query(
+    "UPDATE properties SET is_archived = false, archived_at = NULL WHERE listing_url = $1 AND is_archived = true",
+    [listingUrl]
+  );
+  return (result.rowCount ?? 0) > 0;
 }

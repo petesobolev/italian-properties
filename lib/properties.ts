@@ -44,7 +44,8 @@ export async function getPropertiesByRegion(
 
   try {
     // Build dynamic query with filters
-    const conditions: string[] = ["r.slug = $1"];
+    // Always exclude archived listings from main views
+    const conditions: string[] = ["r.slug = $1", "(p.is_archived = false OR p.is_archived IS NULL)"];
     const params: (string | number)[] = [regionSlug];
     let paramIndex = 2;
 
@@ -216,13 +217,99 @@ export async function getPropertyCountByRegion(
       `SELECT COUNT(*) as count
       FROM properties p
       JOIN regions r ON p.region_id = r.id
-      WHERE r.slug = $1`,
+      WHERE r.slug = $1 AND (p.is_archived = false OR p.is_archived IS NULL)`,
       [regionSlug]
     );
 
     return parseInt(result?.count || "0", 10);
   } catch (error) {
     console.error("Error fetching property count:", error);
+    return 0;
+  }
+}
+
+/**
+ * Get archived properties (stale listings no longer on source websites)
+ * For display on the archived listings page
+ */
+export async function getArchivedProperties(): Promise<PropertySummary[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    const results = await db.queryAll<{
+      id: string;
+      city: string;
+      price_eur: number;
+      bedrooms: number | null;
+      bathrooms: number | null;
+      living_area_sqm: number | null;
+      property_type: string;
+      image_urls: string[];
+      region_slug: string;
+      latitude: number | null;
+      longitude: number | null;
+      source_updated_at: Date | null;
+      updated_at: Date;
+      archived_at: Date;
+    }>(
+      `SELECT
+        p.id,
+        p.city,
+        p.price_eur,
+        p.bedrooms,
+        p.bathrooms,
+        p.living_area_sqm,
+        p.property_type,
+        p.image_urls,
+        p.latitude,
+        p.longitude,
+        p.source_updated_at,
+        p.updated_at,
+        p.archived_at,
+        r.slug as region_slug
+      FROM properties p
+      JOIN regions r ON p.region_id = r.id
+      WHERE p.is_archived = true
+      ORDER BY p.archived_at DESC`
+    );
+
+    return results.map((row) => ({
+      id: row.id,
+      city: row.city,
+      price_eur: row.price_eur,
+      bedrooms: row.bedrooms,
+      bathrooms: row.bathrooms,
+      living_area_sqm: row.living_area_sqm,
+      property_type: row.property_type as PropertySummary["property_type"],
+      thumbnail_url: row.image_urls?.[0] || null,
+      image_urls: row.image_urls || [],
+      region_slug: row.region_slug,
+      latitude: row.latitude,
+      longitude: row.longitude,
+      source_updated_at: row.source_updated_at,
+      updated_at: row.updated_at,
+    }));
+  } catch (error) {
+    console.error("Error fetching archived properties:", error);
+    return [];
+  }
+}
+
+/**
+ * Get count of archived properties
+ */
+export async function getArchivedPropertyCount(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  try {
+    const result = await db.queryOne<{ count: string }>(
+      `SELECT COUNT(*) as count FROM properties WHERE is_archived = true`
+    );
+    return parseInt(result?.count || "0", 10);
+  } catch (error) {
+    console.error("Error fetching archived property count:", error);
     return 0;
   }
 }
@@ -242,7 +329,7 @@ export async function getRegionsWithCounts(): Promise<
       `SELECT
         r.slug,
         r.name,
-        COUNT(p.id) as count
+        COUNT(p.id) FILTER (WHERE p.is_archived = false OR p.is_archived IS NULL) as count
       FROM regions r
       LEFT JOIN properties p ON p.region_id = r.id
       GROUP BY r.id, r.slug, r.name

@@ -95,6 +95,8 @@ export interface Property {
   has_garden: boolean | null;    // Nullable - extracted from description
   last_seen_at: Date;
   source_updated_at: Date | null;  // When listing was updated on source website
+  is_archived: boolean;            // Whether listing is archived (no longer on source)
+  archived_at: Date | null;        // When listing was archived
   created_at: Date;
   updated_at: Date;
 }
