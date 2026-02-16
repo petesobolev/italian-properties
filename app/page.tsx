@@ -59,17 +59,20 @@ export default async function HomePage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="hero-fixed relative bg-[var(--color-text)] text-white overflow-hidden">
-        {/* Decorative background pattern */}
-        <div
-          className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0L100 50L50 100L0 50Z' fill='none' stroke='%23ffffff' stroke-width='0.5'/%3E%3C/svg%3E")`,
-            backgroundSize: "50px 50px",
-          }}
+        {/* Background Image */}
+        <Image
+          src="/images/regions/scalea-beach.jpg"
+          alt="Scalea beach coastline"
+          fill
+          className="object-cover object-top"
+          priority
         />
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-terracotta)]/20 via-transparent to-[var(--color-olive)]/20" />
+        {/* Gradient overlay - dark on left for text readability, fading to transparent on right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-text)]/60 via-[var(--color-text)]/40 via-40% to-transparent" />
+
+        {/* Subtle color accent overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-terracotta)]/10 via-transparent to-[var(--color-olive)]/10" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32 lg:py-40">
           <div className="max-w-4xl">
