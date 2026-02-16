@@ -143,6 +143,7 @@ export default function DemoPropertyPage() {
               bedrooms={property.bedrooms}
               bathrooms={property.bathrooms}
               livingArea={property.living_area_sqm}
+              priceEur={property.price_eur}
               propertyType={property.property_type}
               hasSeaView={property.has_sea_view}
               hasGarden={property.has_garden}
