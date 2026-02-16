@@ -83,7 +83,9 @@ export default async function HomePage() {
 
             {/* Main headline */}
             <h1 className="font-display text-4xl sm:text-5xl lg:text-7xl font-medium leading-[1.1] mb-6">
-              Find Your
+              <span className="text-[var(--color-terracotta-light)]">
+                Find Your
+              </span>
               <br />
               <span className="text-[var(--color-terracotta-light)]">
                 Italian Dream
