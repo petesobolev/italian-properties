@@ -58,7 +58,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="hero-fixed relative bg-[var(--color-text)] text-white overflow-hidden">
+      <section className="hero-fixed relative bg-black text-white overflow-hidden">
         {/* Background Image */}
         <Image
           src="/images/regions/scalea-beach.jpg"
@@ -69,7 +69,7 @@ export default async function HomePage() {
         />
 
         {/* Gradient overlay - dark on left for text readability, fading to transparent on right */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-text)]/60 via-[var(--color-text)]/40 via-40% to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 via-40% to-transparent" />
 
         {/* Subtle color accent overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-terracotta)]/10 via-transparent to-[var(--color-olive)]/10" />
