@@ -14,6 +14,7 @@ import { PropertyGrid, PropertyGridHeader } from "@/components/PropertyGrid";
 import { PropertyFilters } from "@/components/PropertyFilters";
 import { ViewToggle } from "@/components/ViewToggle";
 import { RegionMapView } from "@/components/RegionMapView";
+import { NaturalLanguageSearch } from "@/components/NaturalLanguageSearch";
 import { PropertyFilters as PropertyFiltersType } from "@/types";
 
 interface RegionPageProps {
@@ -207,6 +208,11 @@ export default async function RegionPage({ params, searchParams }: RegionPagePro
           {/* Property Grid or Setup Message */}
           <div className="flex-1 min-w-0">
             <>
+              {/* Natural Language Search */}
+              <div className="mb-8">
+                <NaturalLanguageSearch regionSlug={regionSlug} />
+              </div>
+
               {/* Header with count and view toggle */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <PropertyGridHeader
