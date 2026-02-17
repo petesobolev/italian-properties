@@ -105,6 +105,7 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             loading="lazy"
+            unoptimized
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--color-stone-dark)] to-[var(--color-sand)]">

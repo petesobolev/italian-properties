@@ -64,6 +64,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
             className="object-cover cursor-pointer"
             onClick={() => setIsLightboxOpen(true)}
             priority={activeIndex === 0}
+            unoptimized
           />
 
           {/* Image Counter */}
@@ -156,6 +157,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                   fill
                   sizes="80px"
                   className="object-cover"
+                  unoptimized
                 />
               </button>
             ))}
@@ -207,6 +209,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
               sizes="100vw"
               className="object-contain"
               priority
+              unoptimized
             />
           </div>
 
@@ -282,6 +285,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                     fill
                     sizes="64px"
                     className="object-cover"
+                    unoptimized
                   />
                 </button>
               ))}
