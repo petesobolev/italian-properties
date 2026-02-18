@@ -215,15 +215,15 @@ export function PropertyFeatures({
         {features.map((feature, index) => (
           <div
             key={index}
-            className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-[var(--color-sand)] text-center"
+            className="bg-[var(--color-cream)] dark:bg-gray-700 rounded-lg p-4 border border-[var(--color-sand)] dark:border-gray-600 text-center"
           >
             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-stone)] dark:bg-gray-600 mb-3">
               <span className="text-[var(--color-olive)] dark:text-gray-200">{feature.icon}</span>
             </div>
-            <div className="font-display text-xl text-[var(--color-text)] mb-1">
+            <div className="font-display text-xl text-[var(--color-text)] dark:text-gray-200 mb-1">
               {feature.value}
             </div>
-            <div className="text-xs text-[var(--color-text-muted)]">
+            <div className="text-xs text-[var(--color-text-muted)] dark:text-gray-400">
               {feature.sublabel}
             </div>
           </div>
