@@ -112,22 +112,35 @@ export class CasaAmolaScraper extends BaseScraper {
     const cleaned = locationText.replace(/^\s*map-marker\s*/i, "").trim();
 
     // If it contains comma, the city is usually after the last comma
+    let city = "";
     if (cleaned.includes(",")) {
       const parts = cleaned.split(",");
       // Take the last part which is usually the city
-      const city = parts[parts.length - 1].trim();
-      if (city) return city;
+      city = parts[parts.length - 1].trim();
     }
 
-    // Check for known Puglia cities in the text
-    const knownCities = ["Mola di Bari", "Conversano", "Bari", "Noicattaro", "Rutigliano", "Polignano"];
-    for (const city of knownCities) {
-      if (cleaned.toLowerCase().includes(city.toLowerCase())) {
-        return city;
+    // If no city found from comma split, check for known Puglia cities in the text
+    if (!city) {
+      const knownCities = ["Mola di Bari", "Conversano", "Bari", "Noicattaro", "Rutigliano", "Polignano"];
+      for (const knownCity of knownCities) {
+        if (cleaned.toLowerCase().includes(knownCity.toLowerCase())) {
+          return knownCity;
+        }
       }
+      return cleaned || "Mola di Bari"; // Default to Mola di Bari
     }
 
-    return cleaned || "Mola di Bari"; // Default to Mola di Bari
+    // Fix common misspellings from source data
+    const cityCorrections: Record<string, string> = {
+      "noiccataro": "Noicattaro",  // Double 'c' typo on source website
+    };
+
+    const corrected = cityCorrections[city.toLowerCase()];
+    if (corrected) {
+      return corrected;
+    }
+
+    return city;
   }
 
   /**
