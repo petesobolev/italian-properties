@@ -178,7 +178,10 @@ export default async function RegionPage({ params, searchParams }: RegionPagePro
                 {info.tagline}
               </span>
             </div>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium mb-6">
+            <h1
+              className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium mb-6"
+              style={{ color: 'var(--color-terracotta-light)' }}
+            >
               {info.name}
             </h1>
             <p className="text-lg sm:text-xl text-white/80 leading-relaxed">
