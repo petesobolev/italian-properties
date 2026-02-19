@@ -7,6 +7,9 @@
  * Usage: npx tsx scripts/enrich-properties.ts [--dry-run] [--limit N]
  */
 
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+
 import { query, queryAll, closePool } from "../db/connection";
 import {
   extractFeaturesFromDescription,
