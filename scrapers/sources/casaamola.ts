@@ -284,9 +284,23 @@ export class CasaAmolaScraper extends BaseScraper {
         }
       }
 
-      // Clean up description - normalize whitespace
+      // Clean up description
       if (fullDescription) {
-        fullDescription = fullDescription.replace(/\s+/g, ' ').trim();
+        // Remove "DOVE SI TROVA" section (means "where it is" - redundant with map)
+        fullDescription = fullDescription.replace(/\s*DOVE SI TROVA.*$/i, '');
+
+        // Extract APE energy class and put on separate line
+        // Matches patterns like "APE classe G", "APE: classe G", "Classe energetica G"
+        fullDescription = fullDescription.replace(
+          /\s*(APE[:\s]*classe\s*[A-G][+\d]*|Classe\s*energetica[:\s]*[A-G][+\d]*)/gi,
+          '\n\n$1'
+        );
+
+        // Normalize whitespace but preserve intentional line breaks
+        fullDescription = fullDescription
+          .replace(/[ \t]+/g, ' ')  // Collapse horizontal whitespace
+          .replace(/\n\s*\n/g, '\n\n')  // Normalize paragraph breaks
+          .trim();
       }
 
       // Extract address from property-address element
