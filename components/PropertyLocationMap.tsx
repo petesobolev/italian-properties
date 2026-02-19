@@ -8,6 +8,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import "leaflet/dist/leaflet.css";
 
 interface PropertyLocationMapProps {
   latitude: number;
@@ -33,7 +34,6 @@ export function PropertyLocationMap({
     // Dynamically import Leaflet (only runs in browser)
     const initMap = async () => {
       const L = (await import("leaflet")).default;
-      await import("leaflet/dist/leaflet.css");
 
       if (!mapRef.current) return;
 
