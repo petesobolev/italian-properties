@@ -24,6 +24,7 @@ interface RawListing {
   imageUrl: string | null;
   priceText: string;
   city: string;
+  address: string | null;  // Full address from listing card
   sqmText: string | null;
   bedroomsText: string | null;
   bathroomsText: string | null;
@@ -37,6 +38,7 @@ interface RawListing {
 interface DetailPageData {
   imageUrls: string[];
   fullDescription: string | null;
+  address: string | null;
   hasGarden: boolean;
   hasTerrace: boolean;
   hasBalcony: boolean;
@@ -186,6 +188,9 @@ export class CasaAmolaScraper extends BaseScraper {
         const locationText = locationEl?.textContent?.trim() || "";
         const city = this.extractCity(locationText);
 
+        // Clean the full address - remove map-marker prefix
+        const fullAddress = locationText.replace(/^\s*map-marker\s*/i, "").trim() || null;
+
         // Extract features from .property-meta
         // Format: "Area 5866", "Camere da letto 3", "Bagni 2", "Garage 1"
         const areaMatch = cardText.match(/Area\s*(\d+)/i);
@@ -203,6 +208,7 @@ export class CasaAmolaScraper extends BaseScraper {
           imageUrl,
           priceText,
           city,
+          address: fullAddress,
           sqmText: areaMatch ? areaMatch[1] : null,
           bedroomsText: bedsMatch ? bedsMatch[1] : null,
           bathroomsText: bathsMatch ? bathsMatch[1] : null,
@@ -224,6 +230,7 @@ export class CasaAmolaScraper extends BaseScraper {
     const defaultData: DetailPageData = {
       imageUrls: [],
       fullDescription: null,
+      address: null,
       hasGarden: false,
       hasTerrace: false,
       hasBalcony: false,
@@ -282,6 +289,16 @@ export class CasaAmolaScraper extends BaseScraper {
         fullDescription = fullDescription.replace(/\s+/g, ' ').trim();
       }
 
+      // Extract address from property-address element
+      const addressEl = root.querySelector("p.property-address, .property-address");
+      let address = addressEl?.textContent?.replace(/^\s*map-marker\s*/i, "").trim() || null;
+
+      // If no address element, try to extract from meta or structured data
+      if (!address) {
+        const metaAddress = root.querySelector('meta[property="og:street-address"]');
+        address = metaAddress?.getAttribute("content") || null;
+      }
+
       // Extract features from page content
       const pageText = html.toLowerCase();
       const hasGarden = pageText.includes("giardino") && !pageText.includes("senza giardino");
@@ -293,6 +310,7 @@ export class CasaAmolaScraper extends BaseScraper {
       return {
         imageUrls,
         fullDescription,
+        address,
         hasGarden,
         hasTerrace,
         hasBalcony,
@@ -357,6 +375,7 @@ export class CasaAmolaScraper extends BaseScraper {
         region_id: regionId,
         source_id: sourceId,
         city: raw.city,
+        address: raw.address,  // Full address from listing card
         price_eur: price,
         bedrooms: this.parseNumeric(raw.bedroomsText),
         bathrooms: this.parseNumeric(raw.bathroomsText),

@@ -82,6 +82,9 @@ export interface Property {
   region_id: string;             // FK to regions
   source_id: string;             // FK to sources
   city: string;
+  address: string | null;        // Full street address for geocoding
+  latitude: number | null;       // For map display
+  longitude: number | null;      // For map display
   price_eur: number;
   bedrooms: number | null;       // Nullable - not always available
   bathrooms: number | null;      // Nullable - not always available
@@ -108,6 +111,9 @@ export interface PropertyInsert {
   region_id: string;
   source_id: string;
   city: string;
+  address?: string | null;       // Full street address for geocoding
+  latitude?: number | null;      // For map display
+  longitude?: number | null;     // For map display
   price_eur: number;
   bedrooms?: number | null;
   bathrooms?: number | null;

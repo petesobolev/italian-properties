@@ -99,6 +99,97 @@ async function updatePropertiesInCity(
   return result.rowCount || 0;
 }
 
+interface PropertyWithAddress {
+  id: string;
+  address: string;
+  city: string;
+  region_name: string;
+}
+
+/**
+ * Geocode individual property addresses
+ */
+async function geocodeAddresses(options: { dryRun: boolean; limit?: number }): Promise<number> {
+  // Find properties with addresses but no coordinates
+  let sql = `
+    SELECT
+      p.id,
+      p.address,
+      p.city,
+      r.name as region_name
+    FROM properties p
+    JOIN regions r ON p.region_id = r.id
+    WHERE p.address IS NOT NULL
+      AND p.address != ''
+      AND (p.latitude IS NULL OR p.longitude IS NULL)
+    ORDER BY p.created_at DESC
+  `;
+
+  if (options.limit) {
+    sql += ` LIMIT ${options.limit}`;
+  }
+
+  const properties = await queryAll<PropertyWithAddress>(sql);
+
+  if (properties.length === 0) {
+    return 0;
+  }
+
+  console.log(`📍 Found ${properties.length} properties with addresses to geocode\n`);
+
+  let updated = 0;
+
+  for (let i = 0; i < properties.length; i++) {
+    const { id, address, city, region_name } = properties[i];
+
+    console.log(`[${i + 1}/${properties.length}] 🏠 ${address}, ${city}`);
+
+    // Rate limiting
+    if (i > 0) {
+      await sleep(RATE_LIMIT_MS);
+    }
+
+    // Try geocoding with full address first
+    const searchQuery = `${address}, ${city}, ${region_name}, Italy`;
+    const encodedQuery = encodeURIComponent(searchQuery);
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodedQuery}&format=json&limit=1&countrycodes=it`;
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "ItalianPropertiesApp/1.0 (property geocoding script)",
+        },
+      });
+
+      if (response.ok) {
+        const results: NominatimResult[] = await response.json();
+
+        if (results.length > 0) {
+          const lat = parseFloat(results[0].lat);
+          const lon = parseFloat(results[0].lon);
+
+          console.log(`   📍 Found: ${lat.toFixed(5)}, ${lon.toFixed(5)}`);
+
+          if (!options.dryRun) {
+            await query(
+              `UPDATE properties SET latitude = $1, longitude = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3`,
+              [lat, lon, id]
+            );
+            console.log(`   ✅ Updated`);
+          }
+          updated++;
+        } else {
+          console.log(`   ⚠️  No results for address`);
+        }
+      }
+    } catch (error) {
+      console.log(`   ❌ Error: ${error}`);
+    }
+  }
+
+  return updated;
+}
+
 /**
  * Main geocoding function
  */
@@ -111,6 +202,14 @@ async function geocodeProperties(options: {
   if (options.dryRun) {
     console.log("📋 DRY RUN MODE - No changes will be saved\n");
   }
+
+  // First, geocode properties with specific addresses
+  console.log("=== Phase 1: Address-level geocoding ===\n");
+  const addressUpdated = await geocodeAddresses(options);
+  console.log(`\n✅ Address-level: ${addressUpdated} properties updated\n`);
+
+  // Then, geocode remaining properties by city
+  console.log("=== Phase 2: City-level geocoding ===\n");
 
   // Get unique cities that need geocoding, grouped with their region
   let sql = `

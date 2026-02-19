@@ -11,6 +11,7 @@ import { getPropertyById } from "@/lib/properties";
 import { translateToEnglish } from "@/lib/translate";
 import { ImageGallery } from "@/components/ImageGallery";
 import { PropertyFeatures } from "@/components/PropertyFeatures";
+import { PropertyLocationMap } from "@/components/PropertyLocationMap";
 
 interface PropertyPageProps {
   params: Promise<{
@@ -143,6 +144,16 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               hasSeaView={property.has_sea_view}
               hasGarden={property.has_garden}
             />
+
+            {/* Location Map - shown when address or coordinates are available */}
+            {(property.latitude && property.longitude) && (
+              <PropertyLocationMap
+                latitude={property.latitude}
+                longitude={property.longitude}
+                address={property.address}
+                city={property.city}
+              />
+            )}
           </div>
 
           {/* Sidebar - Right Column */}
