@@ -8,8 +8,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 
 interface PropertyLocationMapProps {
   latitude: number;
@@ -25,63 +23,74 @@ export function PropertyLocationMap({
   city,
 }: PropertyLocationMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
+    if (!mapRef.current) return;
 
-    // Initialize the map
-    const map = L.map(mapRef.current).setView([latitude, longitude], 15);
-    mapInstanceRef.current = map;
+    let map: L.Map | null = null;
 
-    // Add OpenStreetMap tiles
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
-    }).addTo(map);
+    // Dynamically import Leaflet (only runs in browser)
+    const initMap = async () => {
+      const L = (await import("leaflet")).default;
+      await import("leaflet/dist/leaflet.css");
 
-    // Custom marker icon
-    const markerIcon = L.divIcon({
-      className: "custom-marker",
-      html: `
-        <div style="
-          width: 32px;
-          height: 32px;
-          background: var(--color-terracotta, #C4724C);
-          border: 3px solid white;
-          border-radius: 50% 50% 50% 0;
-          transform: rotate(-45deg);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        "></div>
-      `,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
-    });
+      if (!mapRef.current) return;
 
-    // Add marker
-    const marker = L.marker([latitude, longitude], { icon: markerIcon }).addTo(
-      map
-    );
+      // Initialize the map
+      map = L.map(mapRef.current).setView([latitude, longitude], 15);
 
-    // Add popup with address
-    if (address) {
-      marker.bindPopup(
-        `<div style="font-family: system-ui; font-size: 14px;">
-          <strong>${city}</strong><br/>
-          ${address}
-        </div>`
+      // Add OpenStreetMap tiles
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Custom marker icon
+      const markerIcon = L.divIcon({
+        className: "custom-marker",
+        html: `
+          <div style="
+            width: 32px;
+            height: 32px;
+            background: var(--color-terracotta, #C4724C);
+            border: 3px solid white;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          "></div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32],
+      });
+
+      // Add marker
+      const marker = L.marker([latitude, longitude], { icon: markerIcon }).addTo(
+        map
       );
-    }
 
-    setIsLoaded(true);
+      // Add popup with address
+      if (address) {
+        marker.bindPopup(
+          `<div style="font-family: system-ui; font-size: 14px;">
+            <strong>${city}</strong><br/>
+            ${address}
+          </div>`
+        );
+      }
+
+      setIsLoaded(true);
+    };
+
+    initMap();
 
     // Cleanup
     return () => {
-      map.remove();
-      mapInstanceRef.current = null;
+      if (map) {
+        map.remove();
+      }
     };
   }, [latitude, longitude, address, city]);
 
@@ -118,12 +127,12 @@ export function PropertyLocationMap({
 
       <div
         ref={mapRef}
-        className="w-full h-[300px] sm:h-[400px] rounded-lg overflow-hidden"
+        className="w-full h-[300px] sm:h-[400px] rounded-lg overflow-hidden bg-[var(--color-stone)]"
         style={{ zIndex: 1 }}
       />
 
       {!isLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-stone)]">
+        <div className="w-full h-[300px] sm:h-[400px] flex items-center justify-center bg-[var(--color-stone)] rounded-lg -mt-[300px] sm:-mt-[400px]">
           <div className="animate-pulse text-[var(--color-text-muted)]">
             Loading map...
           </div>
