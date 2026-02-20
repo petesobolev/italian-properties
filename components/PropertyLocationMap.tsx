@@ -37,6 +37,11 @@ export function PropertyLocationMap({
 
       if (!mapRef.current) return;
 
+      // Check if map is already initialized (happens with HMR)
+      if ((mapRef.current as HTMLElement & { _leaflet_id?: number })._leaflet_id) {
+        return;
+      }
+
       // Initialize the map
       map = L.map(mapRef.current).setView([latitude, longitude], 15);
 
