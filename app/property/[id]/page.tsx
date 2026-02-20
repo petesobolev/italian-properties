@@ -66,6 +66,22 @@ const regionNames: Record<string, string> = {
   puglia: "Puglia",
 };
 
+/**
+ * Sale status display labels and styling
+ */
+const saleStatusConfig: Record<string, { label: string; bgColor: string; textColor: string }> = {
+  in_contract: {
+    label: "In Contract",
+    bgColor: "bg-amber-500",
+    textColor: "text-white",
+  },
+  sold: {
+    label: "Sold",
+    bgColor: "bg-red-600",
+    textColor: "text-white",
+  },
+};
+
 export default async function PropertyPage({ params }: PropertyPageProps) {
   const { id } = await params;
 
@@ -161,9 +177,18 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             <div className="lg:sticky lg:top-24 space-y-6">
               {/* Price Card */}
               <div
-                className="bg-[var(--color-cream)] rounded-xl p-6 border border-[var(--color-sand)]"
+                className="relative bg-[var(--color-cream)] rounded-xl p-6 border border-[var(--color-sand)]"
                 style={{ boxShadow: "var(--shadow-md)" }}
               >
+                {/* Sale Status Badge (In Contract / Sold) */}
+                {property.sale_status && saleStatusConfig[property.sale_status] && (
+                  <div className="absolute top-4 right-4">
+                    <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${saleStatusConfig[property.sale_status].bgColor} ${saleStatusConfig[property.sale_status].textColor} shadow-md`}>
+                      {saleStatusConfig[property.sale_status].label}
+                    </span>
+                  </div>
+                )}
+
                 {/* Property Type Badge */}
                 <div className="mb-4">
                   <span className="badge badge-terracotta">{typeLabel}</span>
