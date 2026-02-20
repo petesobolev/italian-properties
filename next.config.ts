@@ -39,6 +39,11 @@ const nextConfig: NextConfig = {
         hostname: "www.gesticasaimmobiliare.it",
         pathname: "/**",
       },
+      // Vercel Blob storage for admin-uploaded images
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
     ],
   },
 };

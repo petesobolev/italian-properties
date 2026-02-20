@@ -43,6 +43,7 @@ export interface Source {
   name: string;         // Agency name
   base_url: string;     // Website base URL
   is_active: boolean;   // Whether to include in scraping runs
+  admin_token: string | null;  // Token for admin portal access
   created_at: Date;
 }
 
@@ -240,4 +241,37 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   total_pages: number;
+}
+
+// ============================================================================
+// ADMIN PORTAL TYPES
+// ============================================================================
+
+/**
+ * Property data for admin forms (create/edit)
+ * All fields that can be set by an agent through the admin portal
+ */
+export interface AdminPropertyFormData {
+  region_slug: string;          // Agent selects Tuscany, Calabria, or Puglia
+  city: string;
+  address: string;
+  price_eur: number;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  living_area_sqm: number | null;
+  property_type: PropertyType;
+  description_it: string;       // Italian description (auto-translated to English on save)
+  image_urls: string[];
+  sale_status: SaleStatus;
+}
+
+/**
+ * Property data returned to admin portal
+ * Includes ID and metadata for display
+ */
+export interface AdminProperty extends AdminPropertyFormData {
+  id: string;
+  description_en: string | null;
+  created_at: Date;
+  updated_at: Date;
 }
