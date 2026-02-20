@@ -10,6 +10,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { validateToken, getPropertiesBySource } from "@/lib/admin";
 import AdminPropertyList from "@/components/admin/AdminPropertyList";
+import LogoUploader from "@/components/admin/LogoUploader";
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -38,13 +39,16 @@ export default async function AdminDashboardPage({ params }: Props) {
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                Admin Dashboard
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {source.name}
-              </p>
+            <div className="flex items-center gap-4">
+              <LogoUploader currentLogo={source.logo_url} token={token} />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {source.name}
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Admin Dashboard
+                </p>
+              </div>
             </div>
             <Link
               href={`/admin/${token}/new`}

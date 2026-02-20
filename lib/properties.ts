@@ -113,6 +113,7 @@ export async function getPropertiesByRegion(
       sale_status: string;
       source_updated_at: Date | null;
       updated_at: Date;
+      source_logo_url: string | null;
     }>(
       `SELECT
         p.id,
@@ -128,9 +129,11 @@ export async function getPropertiesByRegion(
         p.sale_status,
         p.source_updated_at,
         p.updated_at,
-        r.slug as region_slug
+        r.slug as region_slug,
+        s.logo_url as source_logo_url
       FROM properties p
       JOIN regions r ON p.region_id = r.id
+      JOIN sources s ON p.source_id = s.id
       WHERE ${conditions.join(" AND ")}
       ORDER BY ${orderBy}`,
       params
@@ -153,6 +156,7 @@ export async function getPropertiesByRegion(
       sale_status: (row.sale_status || "available") as PropertySummary["sale_status"],
       source_updated_at: row.source_updated_at,
       updated_at: row.updated_at,
+      source_logo_url: row.source_logo_url,
     }));
   } catch (error) {
     console.error("Error fetching properties:", error);
@@ -256,6 +260,7 @@ export async function getArchivedProperties(): Promise<PropertySummary[]> {
       source_updated_at: Date | null;
       updated_at: Date;
       archived_at: Date;
+      source_logo_url: string | null;
     }>(
       `SELECT
         p.id,
@@ -272,9 +277,11 @@ export async function getArchivedProperties(): Promise<PropertySummary[]> {
         p.source_updated_at,
         p.updated_at,
         p.archived_at,
-        r.slug as region_slug
+        r.slug as region_slug,
+        s.logo_url as source_logo_url
       FROM properties p
       JOIN regions r ON p.region_id = r.id
+      JOIN sources s ON p.source_id = s.id
       WHERE p.is_archived = true
       ORDER BY p.archived_at DESC`
     );
@@ -295,6 +302,7 @@ export async function getArchivedProperties(): Promise<PropertySummary[]> {
       sale_status: (row.sale_status || "available") as PropertySummary["sale_status"],
       source_updated_at: row.source_updated_at,
       updated_at: row.updated_at,
+      source_logo_url: row.source_logo_url,
     }));
   } catch (error) {
     console.error("Error fetching archived properties:", error);

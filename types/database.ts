@@ -44,6 +44,7 @@ export interface Source {
   base_url: string;     // Website base URL
   is_active: boolean;   // Whether to include in scraping runs
   admin_token: string | null;  // Token for admin portal access
+  logo_url: string | null;     // Agent/agency logo URL
   created_at: Date;
 }
 
@@ -193,6 +194,7 @@ export interface PropertySummary {
   sale_status: SaleStatus;       // available, in_contract, or sold
   source_updated_at: Date | null;  // When listing was updated on source website
   updated_at: Date;                // For fallback when source_updated_at is null
+  source_logo_url: string | null;  // Agent/source logo for display on cards
 }
 
 // ============================================================================

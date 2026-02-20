@@ -36,7 +36,7 @@ export async function validateToken(token: string): Promise<Source | null> {
 
   try {
     const source = await db.queryOne<Source>(
-      `SELECT id, name, base_url, is_active, admin_token, created_at
+      `SELECT id, name, base_url, is_active, admin_token, logo_url, created_at
        FROM sources
        WHERE admin_token = $1`,
       [token]
@@ -397,5 +397,27 @@ export async function getRegions(): Promise<Array<{ slug: string; name: string }
   } catch (error) {
     console.error("Error fetching regions:", error);
     return [];
+  }
+}
+
+/**
+ * Update source logo URL
+ */
+export async function updateSourceLogo(
+  sourceId: string,
+  logoUrl: string | null
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  try {
+    const result = await db.query(
+      `UPDATE sources SET logo_url = $1 WHERE id = $2`,
+      [logoUrl, sourceId]
+    );
+    return result.rowCount !== null && result.rowCount > 0;
+  } catch (error) {
+    console.error("Error updating source logo:", error);
+    return false;
   }
 }
