@@ -60,6 +60,11 @@ export interface SourceInsert {
 // ============================================================================
 
 /**
+ * Sale status for properties
+ */
+export type SaleStatus = "available" | "in_contract" | "sold";
+
+/**
  * Valid property types for the application
  * Matches common Italian real estate classifications
  */
@@ -94,6 +99,7 @@ export interface Property {
   description_it: string | null;
   description_en: string | null; // Pre-translated English description
   listing_url: string;           // Unique - used for deduplication
+  sale_status: SaleStatus;       // available, in_contract, or sold
   has_sea_view: boolean | null;  // Nullable - extracted from description
   has_garden: boolean | null;    // Nullable - extracted from description
   last_seen_at: Date;
@@ -123,6 +129,8 @@ export interface PropertyInsert {
   description_it?: string | null;
   description_en?: string | null; // Pre-translated English description
   listing_url: string;
+  // Sale status
+  sale_status?: SaleStatus;
   // Feature flags - extracted from listings
   has_sea_view?: boolean | null;
   has_garden?: boolean | null;
@@ -181,6 +189,7 @@ export interface PropertySummary {
   region_slug: string;
   latitude: number | null;       // For map display
   longitude: number | null;      // For map display
+  sale_status: SaleStatus;       // available, in_contract, or sold
   source_updated_at: Date | null;  // When listing was updated on source website
   updated_at: Date;                // For fallback when source_updated_at is null
 }

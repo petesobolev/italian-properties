@@ -13,7 +13,7 @@
 import { BaseScraper } from "./base";
 import { ScraperSourceConfig } from "../types";
 import { SOURCES } from "../config";
-import { PropertyInsert, PropertyType } from "@/types";
+import { PropertyInsert, PropertyType, SaleStatus } from "@/types";
 
 /**
  * Raw listing data extracted from HTML before normalization
@@ -30,6 +30,7 @@ interface RawListing {
   bathroomsText: string | null;
   garageText: string | null;
   propertyType: string;
+  saleStatus: SaleStatus;  // available, in_contract, or sold
 }
 
 /**
@@ -202,6 +203,15 @@ export class CasaAmolaScraper extends BaseScraper {
         const typeEl = card.querySelector(".meta-property-type");
         const propertyType = typeEl?.textContent?.trim() || "";
 
+        // Extract sale status from card text (appears near price)
+        // Look for "Trattativa in corso" (in contract) or "Venduto" (sold)
+        let saleStatus: SaleStatus = "available";
+        if (cardText.toLowerCase().includes("trattativa in corso")) {
+          saleStatus = "in_contract";
+        } else if (cardText.toLowerCase().includes("venduto")) {
+          saleStatus = "sold";
+        }
+
         listings.push({
           title,
           url: href,
@@ -214,6 +224,7 @@ export class CasaAmolaScraper extends BaseScraper {
           bathroomsText: bathsMatch ? bathsMatch[1] : null,
           garageText: garageMatch ? garageMatch[1] : null,
           propertyType,
+          saleStatus,
         });
       } catch (error) {
         this.logError("Error parsing property card", error);
@@ -399,6 +410,7 @@ export class CasaAmolaScraper extends BaseScraper {
         description_it: detailData.fullDescription || null,
         description_en: descriptionEn,
         listing_url: raw.url,
+        sale_status: raw.saleStatus,
         has_garden: detailData.hasGarden || null,
         has_terrace: detailData.hasTerrace || null,
         has_balcony: detailData.hasBalcony || null,

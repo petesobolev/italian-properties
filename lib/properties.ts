@@ -110,6 +110,7 @@ export async function getPropertiesByRegion(
       region_slug: string;
       latitude: number | null;
       longitude: number | null;
+      sale_status: string;
       source_updated_at: Date | null;
       updated_at: Date;
     }>(
@@ -124,6 +125,7 @@ export async function getPropertiesByRegion(
         p.image_urls,
         p.latitude,
         p.longitude,
+        p.sale_status,
         p.source_updated_at,
         p.updated_at,
         r.slug as region_slug
@@ -148,6 +150,7 @@ export async function getPropertiesByRegion(
       region_slug: row.region_slug,
       latitude: row.latitude,
       longitude: row.longitude,
+      sale_status: (row.sale_status || "available") as PropertySummary["sale_status"],
       source_updated_at: row.source_updated_at,
       updated_at: row.updated_at,
     }));
@@ -249,6 +252,7 @@ export async function getArchivedProperties(): Promise<PropertySummary[]> {
       region_slug: string;
       latitude: number | null;
       longitude: number | null;
+      sale_status: string;
       source_updated_at: Date | null;
       updated_at: Date;
       archived_at: Date;
@@ -264,6 +268,7 @@ export async function getArchivedProperties(): Promise<PropertySummary[]> {
         p.image_urls,
         p.latitude,
         p.longitude,
+        p.sale_status,
         p.source_updated_at,
         p.updated_at,
         p.archived_at,
@@ -287,6 +292,7 @@ export async function getArchivedProperties(): Promise<PropertySummary[]> {
       region_slug: row.region_slug,
       latitude: row.latitude,
       longitude: row.longitude,
+      sale_status: (row.sale_status || "available") as PropertySummary["sale_status"],
       source_updated_at: row.source_updated_at,
       updated_at: row.updated_at,
     }));

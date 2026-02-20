@@ -67,6 +67,22 @@ const propertyTypeLabels: Record<string, string> = {
   other: "Property",
 };
 
+/**
+ * Sale status display labels and styling
+ */
+const saleStatusConfig: Record<string, { label: string; bgColor: string; textColor: string }> = {
+  in_contract: {
+    label: "In Contract",
+    bgColor: "bg-amber-500",
+    textColor: "text-white",
+  },
+  sold: {
+    label: "Sold",
+    bgColor: "bg-red-600",
+    textColor: "text-white",
+  },
+};
+
 export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
   const {
     id,
@@ -77,6 +93,7 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
     living_area_sqm,
     property_type,
     thumbnail_url,
+    sale_status,
     source_updated_at,
     updated_at,
   } = property;
@@ -134,6 +151,15 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
             {typeLabel}
           </span>
         </div>
+
+        {/* Sale Status Badge (In Contract / Sold) */}
+        {sale_status && saleStatusConfig[sale_status] && (
+          <div className="absolute top-3 right-3">
+            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${saleStatusConfig[sale_status].bgColor} ${saleStatusConfig[sale_status].textColor} shadow-md`}>
+              {saleStatusConfig[sale_status].label}
+            </span>
+          </div>
+        )}
 
         {/* Price overlay at bottom */}
         <div className="absolute bottom-3 left-3 right-3">
