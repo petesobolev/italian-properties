@@ -70,7 +70,11 @@ export async function getPropertiesBySource(sourceId: string): Promise<AdminProp
       description_it: string | null;
       description_en: string | null;
       image_urls: string[];
+      video_urls: string[];
       sale_status: SaleStatus;
+      latitude: number | null;
+      longitude: number | null;
+      location_precision: number | null;
       created_at: Date;
       updated_at: Date;
     }>(
@@ -79,6 +83,9 @@ export async function getPropertiesBySource(sourceId: string): Promise<AdminProp
         r.slug as region_slug,
         p.city,
         p.address,
+        p.latitude,
+        p.longitude,
+        p.location_precision,
         p.price_eur,
         p.bedrooms,
         p.bathrooms,
@@ -87,6 +94,7 @@ export async function getPropertiesBySource(sourceId: string): Promise<AdminProp
         p.description_it,
         p.description_en,
         p.image_urls,
+        p.video_urls,
         p.sale_status,
         p.created_at,
         p.updated_at
@@ -103,6 +111,9 @@ export async function getPropertiesBySource(sourceId: string): Promise<AdminProp
       region_slug: row.region_slug,
       city: row.city,
       address: row.address || "",
+      latitude: row.latitude,
+      longitude: row.longitude,
+      location_precision: row.location_precision,
       price_eur: row.price_eur,
       bedrooms: row.bedrooms,
       bathrooms: row.bathrooms,
@@ -111,6 +122,7 @@ export async function getPropertiesBySource(sourceId: string): Promise<AdminProp
       description_it: row.description_it || "",
       description_en: row.description_en,
       image_urls: row.image_urls || [],
+      video_urls: row.video_urls || [],
       sale_status: row.sale_status || "available",
       created_at: row.created_at,
       updated_at: row.updated_at,
@@ -138,6 +150,9 @@ export async function getPropertyByIdForSource(
       region_slug: string;
       city: string;
       address: string | null;
+      latitude: number | null;
+      longitude: number | null;
+      location_precision: number | null;
       price_eur: number;
       bedrooms: number | null;
       bathrooms: number | null;
@@ -146,6 +161,7 @@ export async function getPropertyByIdForSource(
       description_it: string | null;
       description_en: string | null;
       image_urls: string[];
+      video_urls: string[];
       sale_status: SaleStatus;
       created_at: Date;
       updated_at: Date;
@@ -155,6 +171,9 @@ export async function getPropertyByIdForSource(
         r.slug as region_slug,
         p.city,
         p.address,
+        p.latitude,
+        p.longitude,
+        p.location_precision,
         p.price_eur,
         p.bedrooms,
         p.bathrooms,
@@ -163,6 +182,7 @@ export async function getPropertyByIdForSource(
         p.description_it,
         p.description_en,
         p.image_urls,
+        p.video_urls,
         p.sale_status,
         p.created_at,
         p.updated_at
@@ -179,6 +199,9 @@ export async function getPropertyByIdForSource(
       region_slug: result.region_slug,
       city: result.city,
       address: result.address || "",
+      latitude: result.latitude,
+      longitude: result.longitude,
+      location_precision: result.location_precision,
       price_eur: result.price_eur,
       bedrooms: result.bedrooms,
       bathrooms: result.bathrooms,
@@ -187,6 +210,7 @@ export async function getPropertyByIdForSource(
       description_it: result.description_it || "",
       description_en: result.description_en,
       image_urls: result.image_urls || [],
+      video_urls: result.video_urls || [],
       sale_status: result.sale_status || "available",
       created_at: result.created_at,
       updated_at: result.updated_at,
@@ -230,6 +254,9 @@ export async function createProperty(
         source_id,
         city,
         address,
+        latitude,
+        longitude,
+        location_precision,
         price_eur,
         bedrooms,
         bathrooms,
@@ -238,16 +265,20 @@ export async function createProperty(
         description_it,
         description_en,
         image_urls,
+        video_urls,
         sale_status,
         listing_url,
         last_seen_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NOW())
       RETURNING id`,
       [
         region.id,
         sourceId,
         data.city,
         data.address || null,
+        data.latitude,
+        data.longitude,
+        data.location_precision,
         data.price_eur,
         data.bedrooms,
         data.bathrooms,
@@ -256,6 +287,7 @@ export async function createProperty(
         data.description_it || null,
         descriptionEn,
         JSON.stringify(data.image_urls || []),
+        JSON.stringify(data.video_urls || []),
         data.sale_status || "available",
         listingUrl,
       ]
@@ -303,6 +335,9 @@ export async function updateProperty(
     const fields: (keyof AdminPropertyFormData)[] = [
       "city",
       "address",
+      "latitude",
+      "longitude",
+      "location_precision",
       "price_eur",
       "bedrooms",
       "bathrooms",
@@ -324,6 +359,13 @@ export async function updateProperty(
     if (data.image_urls !== undefined) {
       updates.push(`image_urls = $${paramIndex}`);
       params.push(JSON.stringify(data.image_urls));
+      paramIndex++;
+    }
+
+    // Handle video_urls separately (needs JSON serialization)
+    if (data.video_urls !== undefined) {
+      updates.push(`video_urls = $${paramIndex}`);
+      params.push(JSON.stringify(data.video_urls));
       paramIndex++;
     }
 

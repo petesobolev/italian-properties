@@ -10,6 +10,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageUploader from "./ImageUploader";
+import VideoUploader from "./VideoUploader";
+import LocationPicker from "./LocationPicker";
 import { AdminPropertyFormData, PropertyType, SaleStatus } from "@/types";
 
 interface AdminPropertyFormProps {
@@ -51,6 +53,9 @@ export default function AdminPropertyForm({
     region_slug: initialData?.region_slug || (regions[0]?.slug ?? ""),
     city: initialData?.city || "",
     address: initialData?.address || "",
+    latitude: initialData?.latitude ?? null,
+    longitude: initialData?.longitude ?? null,
+    location_precision: initialData?.location_precision ?? null,
     price_eur: initialData?.price_eur || 0,
     bedrooms: initialData?.bedrooms ?? null,
     bathrooms: initialData?.bathrooms ?? null,
@@ -58,6 +63,7 @@ export default function AdminPropertyForm({
     property_type: initialData?.property_type || "apartment",
     description_it: initialData?.description_it || "",
     image_urls: initialData?.image_urls || [],
+    video_urls: initialData?.video_urls || [],
     sale_status: initialData?.sale_status || "available",
   });
 
@@ -122,56 +128,72 @@ export default function AdminPropertyForm({
         />
       </section>
 
+      {/* Videos */}
+      <section>
+        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          Videos
+        </h2>
+        <VideoUploader
+          videos={formData.video_urls}
+          onChange={(urls) => updateField("video_urls", urls)}
+          token={token}
+        />
+      </section>
+
       {/* Location */}
       <section>
         <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
           Location
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Region *
-            </label>
-            <select
-              value={formData.region_slug}
-              onChange={(e) => updateField("region_slug", e.target.value)}
-              required
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {regions.map((region) => (
-                <option key={region.slug} value={region.slug}>
-                  {region.name}
-                </option>
-              ))}
-            </select>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Region *
+              </label>
+              <select
+                value={formData.region_slug}
+                onChange={(e) => updateField("region_slug", e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {regions.map((region) => (
+                  <option key={region.slug} value={region.slug}>
+                    {region.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                City *
+              </label>
+              <input
+                type="text"
+                value={formData.city}
+                onChange={(e) => updateField("city", e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Florence"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              City *
-            </label>
-            <input
-              type="text"
-              value={formData.city}
-              onChange={(e) => updateField("city", e.target.value)}
-              required
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="e.g., Florence"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Address
-            </label>
-            <input
-              type="text"
-              value={formData.address}
-              onChange={(e) => updateField("address", e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="e.g., Via Roma 123"
-            />
-          </div>
+          {/* Location Picker */}
+          <LocationPicker
+            address={formData.address}
+            latitude={formData.latitude}
+            longitude={formData.longitude}
+            precision={formData.location_precision}
+            onAddressChange={(address) => updateField("address", address)}
+            onCoordinatesChange={(lat, lng) => {
+              updateField("latitude", lat);
+              updateField("longitude", lng);
+            }}
+            onPrecisionChange={(precision) => updateField("location_precision", precision)}
+            city={formData.city}
+          />
         </div>
       </section>
 

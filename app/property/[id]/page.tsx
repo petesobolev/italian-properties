@@ -12,6 +12,7 @@ import { translateToEnglish } from "@/lib/translate";
 import { ImageGallery } from "@/components/ImageGallery";
 import { PropertyFeatures } from "@/components/PropertyFeatures";
 import { PropertyLocationMap } from "@/components/PropertyLocationMap";
+import { PropertyVideos } from "@/components/PropertyVideos";
 
 interface PropertyPageProps {
   params: Promise<{
@@ -135,6 +136,11 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               alt={`${typeLabel} in ${property.city}`}
             />
 
+            {/* Videos */}
+            {property.video_urls && property.video_urls.length > 0 && (
+              <PropertyVideos videos={property.video_urls} />
+            )}
+
             {/* Description */}
             {description && (
               <section className="bg-[var(--color-cream)] rounded-xl p-6 sm:p-8 border border-[var(--color-sand)]">
@@ -168,6 +174,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                 longitude={property.longitude}
                 address={property.address}
                 city={property.city}
+                precision={property.location_precision}
               />
             )}
           </div>

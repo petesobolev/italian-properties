@@ -15,6 +15,7 @@ interface PropertyLocationMapProps {
   longitude: number;
   address?: string | null;
   city: string;
+  precision?: number | null; // Uncertainty radius in meters (null = exact location)
 }
 
 export function PropertyLocationMap({
@@ -22,6 +23,7 @@ export function PropertyLocationMap({
   longitude,
   address,
   city,
+  precision,
 }: PropertyLocationMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -42,8 +44,9 @@ export function PropertyLocationMap({
         return;
       }
 
-      // Initialize the map
-      map = L.map(mapRef.current).setView([latitude, longitude], 15);
+      // Initialize the map with appropriate zoom based on precision
+      const initialZoom = precision ? Math.max(12, 16 - Math.log2(precision / 100)) : 15;
+      map = L.map(mapRef.current).setView([latitude, longitude], initialZoom);
 
       // Add OpenStreetMap tiles
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -52,38 +55,60 @@ export function PropertyLocationMap({
         maxZoom: 19,
       }).addTo(map);
 
-      // Custom marker icon
-      const markerIcon = L.divIcon({
-        className: "custom-marker",
-        html: `
-          <div style="
-            width: 32px;
-            height: 32px;
-            background: var(--color-terracotta, #C4724C);
-            border: 3px solid white;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          "></div>
-        `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32],
-      });
+      if (precision) {
+        // Show circle for approximate location
+        const circle = L.circle([latitude, longitude], {
+          radius: precision,
+          color: "#C4724C",
+          fillColor: "#C4724C",
+          fillOpacity: 0.15,
+          weight: 2,
+        }).addTo(map);
 
-      // Add marker
-      const marker = L.marker([latitude, longitude], { icon: markerIcon }).addTo(
-        map
-      );
-
-      // Add popup with address
-      if (address) {
-        marker.bindPopup(
+        // Add popup to circle
+        circle.bindPopup(
           `<div style="font-family: system-ui; font-size: 14px;">
             <strong>${city}</strong><br/>
-            ${address}
+            <span style="color: #666;">Approximate location</span>
           </div>`
         );
+
+        // Fit map to circle bounds
+        map.fitBounds(circle.getBounds(), { padding: [30, 30] });
+      } else {
+        // Custom marker icon for exact location
+        const markerIcon = L.divIcon({
+          className: "custom-marker",
+          html: `
+            <div style="
+              width: 32px;
+              height: 32px;
+              background: var(--color-terracotta, #C4724C);
+              border: 3px solid white;
+              border-radius: 50% 50% 50% 0;
+              transform: rotate(-45deg);
+              box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            "></div>
+          `,
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32],
+        });
+
+        // Add marker
+        const marker = L.marker([latitude, longitude], { icon: markerIcon }).addTo(
+          map
+        );
+
+        // Add popup with address
+        if (address) {
+          marker.bindPopup(
+            `<div style="font-family: system-ui; font-size: 14px;">
+              <strong>${city}</strong><br/>
+              ${address}
+            </div>`
+          );
+        }
       }
 
       setIsLoaded(true);
@@ -97,7 +122,7 @@ export function PropertyLocationMap({
         map.remove();
       }
     };
-  }, [latitude, longitude, address, city]);
+  }, [latitude, longitude, address, city, precision]);
 
   return (
     <section className="bg-[var(--color-cream)] dark:bg-gray-800 rounded-xl p-6 sm:p-8 border border-[var(--color-sand)] dark:border-gray-700">

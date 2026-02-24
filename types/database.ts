@@ -92,12 +92,14 @@ export interface Property {
   address: string | null;        // Full street address for geocoding
   latitude: number | null;       // For map display
   longitude: number | null;      // For map display
+  location_precision: number | null; // Uncertainty radius in meters (null = exact)
   price_eur: number;
   bedrooms: number | null;       // Nullable - not always available
   bathrooms: number | null;      // Nullable - not always available
   living_area_sqm: number | null; // Nullable - not always available
   property_type: PropertyType;
   image_urls: string[];          // Stored as JSONB in PostgreSQL
+  video_urls: string[];          // Vercel Blob URLs or YouTube URLs (JSONB)
   description_it: string | null;
   description_en: string | null; // Pre-translated English description
   listing_url: string;           // Unique - used for deduplication
@@ -257,6 +259,9 @@ export interface AdminPropertyFormData {
   region_slug: string;          // Agent selects Tuscany, Calabria, or Puglia
   city: string;
   address: string;
+  latitude: number | null;      // For map display
+  longitude: number | null;     // For map display
+  location_precision: number | null; // Uncertainty radius in meters (null = exact)
   price_eur: number;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -264,6 +269,7 @@ export interface AdminPropertyFormData {
   property_type: PropertyType;
   description_it: string;       // Italian description (auto-translated to English on save)
   image_urls: string[];
+  video_urls: string[];         // Vercel Blob URLs or YouTube URLs
   sale_status: SaleStatus;
 }
 

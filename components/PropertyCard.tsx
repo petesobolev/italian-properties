@@ -153,35 +153,35 @@ export function PropertyCard({ property, index = 0 }: PropertyCardProps) {
           </span>
         </div>
 
-        {/* Top Right: Agent Logo and Sale Status */}
-        <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
-          {/* Agent Logo */}
-          {source_logo_url && (
-            <div className="w-10 h-10 rounded-lg bg-white shadow-md overflow-hidden flex items-center justify-center">
-              <Image
-                src={source_logo_url}
-                alt="Agent"
-                width={36}
-                height={36}
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-          )}
-          {/* Sale Status Badge (In Contract / Sold) */}
-          {sale_status && saleStatusConfig[sale_status] && (
-            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${saleStatusConfig[sale_status].bgColor} ${saleStatusConfig[sale_status].textColor} shadow-md`}>
-              {saleStatusConfig[sale_status].label}
-            </span>
-          )}
-        </div>
+        {/* Top Right: Agent Logo */}
+        {source_logo_url && (
+          <div className="absolute top-3 right-3 w-10 h-10 rounded-lg bg-white shadow-md overflow-hidden flex items-center justify-center">
+            <Image
+              src={source_logo_url}
+              alt="Agent"
+              width={36}
+              height={36}
+              className="object-contain"
+              unoptimized
+            />
+          </div>
+        )}
 
-        {/* Price overlay at bottom */}
-        <div className="absolute bottom-3 left-3 right-3">
+        {/* Price overlay at bottom left */}
+        <div className="absolute bottom-3 left-3">
           <span className="font-display text-2xl font-semibold text-white drop-shadow-lg">
             {formatPrice(price_eur)}
           </span>
         </div>
+
+        {/* Sale Status Badge at bottom right (In Contract / Sold) */}
+        {sale_status && saleStatusConfig[sale_status] && (
+          <div className="absolute bottom-3 right-3">
+            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${saleStatusConfig[sale_status].bgColor} ${saleStatusConfig[sale_status].textColor} shadow-md`}>
+              {saleStatusConfig[sale_status].label}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Content */}

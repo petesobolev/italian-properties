@@ -1,8 +1,11 @@
 /**
- * Image Upload API
+ * Media Upload API
  *
- * Handles image uploads to Vercel Blob storage.
+ * Handles image and video uploads to Vercel Blob storage.
  * Validates admin token before allowing uploads.
+ *
+ * Query params:
+ *   type=video - Upload video files instead of images
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -29,6 +32,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check upload type (image or video)
+    const uploadType = request.nextUrl.searchParams.get("type") || "image";
+    const isVideo = uploadType === "video";
+    const mimePrefix = isVideo ? "video/" : "image/";
+    const folder = isVideo ? "videos" : "properties";
+
     // Get form data with files
     const formData = await request.formData();
     const files = formData.getAll("files") as File[];
@@ -45,15 +54,15 @@ export async function POST(request: NextRequest) {
 
     for (const file of files) {
       // Validate file type
-      if (!file.type.startsWith("image/")) {
-        continue; // Skip non-image files
+      if (!file.type.startsWith(mimePrefix)) {
+        continue; // Skip files that don't match expected type
       }
 
       // Generate unique filename
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).substring(7);
-      const extension = file.name.split(".").pop() || "jpg";
-      const filename = `properties/${source.id}/${timestamp}-${randomStr}.${extension}`;
+      const extension = file.name.split(".").pop() || (isVideo ? "mp4" : "jpg");
+      const filename = `${folder}/${source.id}/${timestamp}-${randomStr}.${extension}`;
 
       // Upload to Vercel Blob
       const blob = await put(filename, file, {
@@ -68,7 +77,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Failed to upload images" },
+      { error: "Failed to upload files" },
       { status: 500 }
     );
   }
