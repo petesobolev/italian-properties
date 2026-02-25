@@ -254,31 +254,52 @@ export default async function HomePage() {
 
                     {/* Stats */}
                     <div className="flex items-center gap-6">
-                      <div>
-                        <span className="block font-display text-2xl text-[var(--color-text)]">
-                          {countMap[region.slug]?.toLocaleString() || "—"}
-                        </span>
-                        <span className="text-sm text-[var(--color-text-light)]">
-                          Properties
-                        </span>
-                      </div>
-                      <div className="w-px h-10 bg-[var(--color-sand)]" />
-                      <div className="flex items-center gap-2 text-[var(--color-terracotta)] font-medium">
-                        <span>View listings</span>
-                        <svg
-                          className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 8l4 4m0 0l-4 4m4-4H3"
-                          />
-                        </svg>
-                      </div>
+                      {(countMap[region.slug] || 0) > 0 ? (
+                        <>
+                          <div>
+                            <span className="block font-display text-2xl text-[var(--color-text)]">
+                              {countMap[region.slug]?.toLocaleString() || "—"}
+                            </span>
+                            <span className="text-sm text-[var(--color-text-light)]">
+                              Properties
+                            </span>
+                          </div>
+                          <div className="w-px h-10 bg-[var(--color-sand)]" />
+                          <div className="flex items-center gap-2 text-[var(--color-terracotta)] font-medium">
+                            <span>View listings</span>
+                            <svg
+                              className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 8l4 4m0 0l-4 4m4-4H3"
+                              />
+                            </svg>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-2 text-[var(--color-text-muted)] italic">
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <span>Listings will be added soon</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
