@@ -147,14 +147,14 @@ body::before {
 
 /* ============================================================================
    TYPOGRAPHY
-   Using @layer base ensures Tailwind utilities can override these defaults
+   Note: color is NOT set here so Tailwind utilities can control text colors.
+   Pages using the design system should use text-[var(--color-text)] explicitly.
    ============================================================================ */
 @layer base {
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     font-weight: 500;
     line-height: 1.2;
-    color: var(--color-text);
     letter-spacing: -0.01em;
   }
 
