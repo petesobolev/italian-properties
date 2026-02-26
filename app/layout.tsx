@@ -85,6 +85,11 @@ export default function RootLayout({
                 </div>
               </Link>
 
+              {/* Tagline */}
+              <p className="hidden md:block text-sm text-[var(--color-text-muted)] italic max-w-xs lg:max-w-none">
+                Featured properties by our associate agents and direct sellers
+              </p>
+
               {/* Navigation */}
               <nav className="hidden md:flex items-center gap-8">
                 <Link
