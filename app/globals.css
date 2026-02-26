@@ -315,8 +315,8 @@ body::before {
    SCROLLBAR STYLING
    ============================================================================ */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
@@ -324,13 +324,13 @@ body::before {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-sand);
-  border-radius: 5px;
-  border: 2px solid var(--color-stone-dark);
+  background: var(--color-text-light);
+  border-radius: 6px;
+  border: 3px solid var(--color-stone-dark);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-light);
+  background: var(--color-text-muted);
 }
 
 /* Thin scrollbar for sidebar filters */
@@ -345,14 +345,14 @@ body::before {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: var(--color-sand);
+  background: var(--color-text-light);
   border-radius: 3px;
   border: none;
   min-height: 40px; /* Ensure thumb is always grabbable */
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-light);
+  background: var(--color-text-muted);
 }
 
 /* Firefox thin scrollbar support */
