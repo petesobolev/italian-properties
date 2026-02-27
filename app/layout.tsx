@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ThemeProvider, ThemeScript } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DesktopLayoutEnforcer } from "@/components/DesktopLayoutEnforcer";
 import "./globals.css";
 
 /**
@@ -52,6 +54,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased">
+        <Suspense fallback={null}>
+          <DesktopLayoutEnforcer />
+        </Suspense>
         <ThemeProvider>
         {/* Elegant Header */}
         <header className="sticky top-0 z-50 bg-[var(--color-cream)]/95 backdrop-blur-md border-b border-[var(--color-sand)]">

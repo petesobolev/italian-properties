@@ -683,3 +683,130 @@ body::before {
 .leaflet-cluster-anim .leaflet-marker-shadow {
   transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
+
+/* ============================================================================
+   FORCE DESKTOP LAYOUT
+   When ?layout=desktop is in URL, force desktop styles regardless of viewport.
+   Used for iframe embeds that need consistent desktop appearance.
+   ============================================================================ */
+
+/* Force desktop navigation (hide mobile menu, show desktop nav) */
+.force-desktop .md\:flex {
+  display: flex !important;
+}
+
+.force-desktop .md\:hidden,
+.force-desktop .flex.md\:hidden {
+  display: none !important;
+}
+
+/* Force desktop sidebar layout (side-by-side instead of stacked) */
+.force-desktop .lg\:flex-row {
+  flex-direction: row !important;
+}
+
+.force-desktop .lg\:w-72 {
+  width: 18rem !important;
+}
+
+.force-desktop .lg\:sticky {
+  position: sticky !important;
+}
+
+.force-desktop .lg\:top-24 {
+  top: 6rem !important;
+}
+
+.force-desktop .lg\:max-h-\[calc\(100vh-8rem\)\] {
+  max-height: calc(100vh - 8rem) !important;
+}
+
+.force-desktop .lg\:overflow-y-auto {
+  overflow-y: auto !important;
+}
+
+/* Force desktop grid columns for property cards */
+.force-desktop .sm\:grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.force-desktop .lg\:grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+/* Force desktop text sizes */
+.force-desktop .sm\:text-xl {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+}
+
+.force-desktop .sm\:text-2xl {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+}
+
+.force-desktop .lg\:text-6xl {
+  font-size: 3.75rem !important;
+  line-height: 1 !important;
+}
+
+/* Force desktop spacing */
+.force-desktop .sm\:py-24 {
+  padding-top: 6rem !important;
+  padding-bottom: 6rem !important;
+}
+
+.force-desktop .sm\:py-16 {
+  padding-top: 4rem !important;
+  padding-bottom: 4rem !important;
+}
+
+.force-desktop .lg\:px-8 {
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+/* Force desktop header height */
+.force-desktop .sm\:h-20 {
+  height: 5rem !important;
+}
+
+/* Force desktop flex layouts */
+.force-desktop .sm\:flex-row {
+  flex-direction: row !important;
+}
+
+.force-desktop .sm\:items-center {
+  align-items: center !important;
+}
+
+.force-desktop .sm\:justify-between {
+  justify-content: space-between !important;
+}
+
+/* Force show elements hidden on mobile */
+.force-desktop .hidden.sm\:block,
+.force-desktop .hidden.md\:block,
+.force-desktop .hidden.lg\:block {
+  display: block !important;
+}
+
+.force-desktop .hidden.sm\:flex,
+.force-desktop .hidden.md\:flex,
+.force-desktop .hidden.lg\:flex {
+  display: flex !important;
+}
+
+/* Force desktop map height */
+.force-desktop .sm\:h-\[400px\] {
+  height: 400px !important;
+}
+
+/* Force desktop grid gaps */
+.force-desktop .lg\:gap-12 {
+  gap: 3rem !important;
+}
+
+.force-desktop .lg\:gap-8 {
+  gap: 2rem !important;
+}
