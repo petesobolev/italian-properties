@@ -338,6 +338,7 @@ export class VittoriScraper extends BaseScraper {
       const property: PropertyInsert = {
         region_id: regionId,
         source_id: sourceId,
+        title: raw.title,
         city: this.extractCity(raw.title),
         price_eur: price,
         bedrooms: this.parseNumeric(raw.bedroomsText),

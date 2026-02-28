@@ -399,6 +399,7 @@ export class CasaAmolaScraper extends BaseScraper {
       const property: PropertyInsert = {
         region_id: regionId,
         source_id: sourceId,
+        title: raw.title,
         city: raw.city,
         address: raw.address,  // Full address from listing card
         price_eur: price,

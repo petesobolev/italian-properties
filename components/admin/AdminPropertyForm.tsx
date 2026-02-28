@@ -51,6 +51,7 @@ export default function AdminPropertyForm({
 
   const [formData, setFormData] = useState<AdminPropertyFormData>({
     region_slug: initialData?.region_slug || (regions[0]?.slug ?? ""),
+    title: initialData?.title || "",
     city: initialData?.city || "",
     address: initialData?.address || "",
     latitude: initialData?.latitude ?? null,
@@ -202,7 +203,25 @@ export default function AdminPropertyForm({
         <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
           Property Details
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-4">
+          {/* Title - full width */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Listing Title
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => updateField("title", e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="e.g., Beautiful Villa with Sea View in Tuscany"
+            />
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A descriptive title for your listing
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Property Type *

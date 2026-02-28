@@ -88,6 +88,7 @@ export interface Property {
   id: string;                    // UUID
   region_id: string;             // FK to regions
   source_id: string;             // FK to sources
+  title: string | null;          // Original listing title from source
   city: string;
   address: string | null;        // Full street address for geocoding
   latitude: number | null;       // For map display
@@ -120,6 +121,7 @@ export interface Property {
 export interface PropertyInsert {
   region_id: string;
   source_id: string;
+  title?: string | null;         // Original listing title from source
   city: string;
   address?: string | null;       // Full street address for geocoding
   latitude?: number | null;      // For map display
@@ -257,6 +259,7 @@ export interface PaginatedResponse<T> {
  */
 export interface AdminPropertyFormData {
   region_slug: string;          // Agent selects Tuscany, Calabria, or Puglia
+  title: string;                // Listing title
   city: string;
   address: string;
   latitude: number | null;      // For map display

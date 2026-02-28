@@ -83,12 +83,13 @@ async function insertProperty(property: PropertyInsert): Promise<Property | null
   try {
     const result = await queryOne<Property>(
       `INSERT INTO properties (
-        region_id, source_id, city, address, price_eur, bedrooms, bathrooms,
+        region_id, source_id, title, city, address, price_eur, bedrooms, bathrooms,
         living_area_sqm, property_type, image_urls, description_it, description_en,
         listing_url, sale_status, has_garden, has_terrace, has_balcony, has_parking, has_garage,
         source_updated_at, last_seen_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, CURRENT_TIMESTAMP)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, CURRENT_TIMESTAMP)
       ON CONFLICT (listing_url) DO UPDATE SET
+        title = COALESCE(EXCLUDED.title, properties.title),
         price_eur = EXCLUDED.price_eur,
         address = COALESCE(EXCLUDED.address, properties.address),
         bedrooms = COALESCE(EXCLUDED.bedrooms, properties.bedrooms),
@@ -110,6 +111,7 @@ async function insertProperty(property: PropertyInsert): Promise<Property | null
       [
         property.region_id,
         property.source_id,
+        property.title || null,
         property.city,
         property.address || null,
         property.price_eur,

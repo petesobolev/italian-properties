@@ -141,18 +141,30 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               <PropertyVideos videos={property.video_urls} />
             )}
 
-            {/* Description */}
-            {description && (
+            {/* Title and Description */}
+            {(property.title || description) && (
               <section className="bg-[var(--color-cream)] rounded-xl p-6 sm:p-8 border border-[var(--color-sand)]">
-                <h2 className="font-display text-2xl text-[var(--color-text)] mb-4 flex items-center gap-3">
-                  <span className="w-8 h-0.5 bg-[var(--color-terracotta)]" />
-                  Description
-                </h2>
-                <div className="prose prose-stone max-w-none">
-                  <p className="text-[var(--color-text-muted)] leading-relaxed whitespace-pre-line">
-                    {description}
-                  </p>
-                </div>
+                {/* Property Title */}
+                {property.title && (
+                  <h2 className="font-display text-2xl sm:text-3xl text-[var(--color-text)] mb-4">
+                    {property.title}
+                  </h2>
+                )}
+
+                {/* Description */}
+                {description && (
+                  <>
+                    <h3 className="font-display text-lg text-[var(--color-text)] mb-3 flex items-center gap-3">
+                      <span className="w-6 h-0.5 bg-[var(--color-terracotta)]" />
+                      Description
+                    </h3>
+                    <div className="prose prose-stone max-w-none">
+                      <p className="text-[var(--color-text-muted)] leading-relaxed whitespace-pre-line">
+                        {description}
+                      </p>
+                    </div>
+                  </>
+                )}
               </section>
             )}
 

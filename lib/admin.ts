@@ -60,6 +60,7 @@ export async function getPropertiesBySource(sourceId: string): Promise<AdminProp
     const results = await db.queryAll<{
       id: string;
       region_slug: string;
+      title: string | null;
       city: string;
       address: string | null;
       price_eur: number;
@@ -81,6 +82,7 @@ export async function getPropertiesBySource(sourceId: string): Promise<AdminProp
       `SELECT
         p.id,
         r.slug as region_slug,
+        p.title,
         p.city,
         p.address,
         p.latitude,
@@ -109,6 +111,7 @@ export async function getPropertiesBySource(sourceId: string): Promise<AdminProp
     return results.map((row) => ({
       id: row.id,
       region_slug: row.region_slug,
+      title: row.title || "",
       city: row.city,
       address: row.address || "",
       latitude: row.latitude,
@@ -148,6 +151,7 @@ export async function getPropertyByIdForSource(
     const result = await db.queryOne<{
       id: string;
       region_slug: string;
+      title: string | null;
       city: string;
       address: string | null;
       latitude: number | null;
@@ -169,6 +173,7 @@ export async function getPropertyByIdForSource(
       `SELECT
         p.id,
         r.slug as region_slug,
+        p.title,
         p.city,
         p.address,
         p.latitude,
@@ -197,6 +202,7 @@ export async function getPropertyByIdForSource(
     return {
       id: result.id,
       region_slug: result.region_slug,
+      title: result.title || "",
       city: result.city,
       address: result.address || "",
       latitude: result.latitude,
@@ -252,6 +258,7 @@ export async function createProperty(
       `INSERT INTO properties (
         region_id,
         source_id,
+        title,
         city,
         address,
         latitude,
@@ -269,11 +276,12 @@ export async function createProperty(
         sale_status,
         listing_url,
         last_seen_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NOW())
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW())
       RETURNING id`,
       [
         region.id,
         sourceId,
+        data.title || null,
         data.city,
         data.address || null,
         data.latitude,
@@ -333,6 +341,7 @@ export async function updateProperty(
     }
 
     const fields: (keyof AdminPropertyFormData)[] = [
+      "title",
       "city",
       "address",
       "latitude",
