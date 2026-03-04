@@ -810,3 +810,71 @@ body::before {
 .force-desktop .lg\:gap-8 {
   gap: 2rem !important;
 }
+
+/* Force desktop padding */
+.force-desktop .lg\:py-40 {
+  padding-top: 10rem !important;
+  padding-bottom: 10rem !important;
+}
+
+.force-desktop .lg\:p-12 {
+  padding: 3rem !important;
+}
+
+/* Force desktop widths */
+.force-desktop .lg\:w-2\/5 {
+  width: 40% !important;
+}
+
+.force-desktop .lg\:w-3\/5 {
+  width: 60% !important;
+}
+
+/* Force desktop text sizes */
+.force-desktop .lg\:text-7xl {
+  font-size: 4.5rem !important;
+  line-height: 1 !important;
+}
+
+.force-desktop .lg\:text-5xl {
+  font-size: 3rem !important;
+  line-height: 1 !important;
+}
+
+.force-desktop .lg\:text-4xl {
+  font-size: 2.25rem !important;
+  line-height: 2.5rem !important;
+}
+
+/* Force desktop aspect ratio */
+.force-desktop .lg\:aspect-auto {
+  aspect-ratio: auto !important;
+}
+
+/* Force desktop flex-row */
+.force-desktop .lg\:flex-row {
+  flex-direction: row !important;
+}
+
+.force-desktop .lg\:flex-row-reverse {
+  flex-direction: row-reverse !important;
+}
+
+/* Force desktop md: grid columns */
+.force-desktop .md\:grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+/* Force desktop md: block/hidden */
+.force-desktop .md\:block {
+  display: block !important;
+}
+
+.force-desktop .md\:hidden {
+  display: none !important;
+}
+
+/* Force desktop lg: max-width */
+.force-desktop .lg\:max-w-none {
+  max-width: none !important;
+}
