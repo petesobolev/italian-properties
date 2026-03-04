@@ -344,7 +344,7 @@ export default function LocationPicker({
             style={{ zIndex: 1 }}
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Coordinates: {latitude?.toFixed(6)}, {longitude?.toFixed(6)}
+            Coordinates: {Number(latitude)?.toFixed(6)}, {Number(longitude)?.toFixed(6)}
             {precision && ` (showing ~${precision}m radius)`}
           </p>
         </div>
