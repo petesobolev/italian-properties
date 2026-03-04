@@ -170,7 +170,7 @@ export default function VideoUploader({ videos, onChange, token }: VideoUploader
                     />
                   ) : (
                     <video
-                      src={url}
+                      src={`${url}#t=0.1`}
                       className="w-full h-full object-cover"
                       controls
                       preload="metadata"
