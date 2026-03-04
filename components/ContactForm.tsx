@@ -14,6 +14,7 @@ import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
 interface ContactFormProps {
   propertyId: string;
   propertyTitle: string;
+  propertyUrl: string;
   sourceId: string;
   sourceName: string;
 }
@@ -21,10 +22,11 @@ interface ContactFormProps {
 export function ContactForm({
   propertyId,
   propertyTitle,
+  propertyUrl,
   sourceId,
   sourceName,
 }: ContactFormProps) {
-  const defaultMessage = `Please send me more information on ${propertyTitle || "this property"}.`;
+  const defaultMessage = `Please send me more information on ${propertyTitle || "this property"}.\n\n${propertyUrl}`;
 
   const [formData, setFormData] = useState({
     name: "",

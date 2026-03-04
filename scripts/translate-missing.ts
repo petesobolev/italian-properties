@@ -1,19 +1,18 @@
 /**
- * Translate Missing Titles and Descriptions (Overnight Version)
+ * Translate Missing Titles and Descriptions
+ *
+ * Uses Google Cloud Translation API v2 (Basic) with NMT model.
+ * This is the cost-effective option (~$20 per 1M characters).
  *
  * This script translates:
- * 1. All Italian titles to English (stored in title field, replacing Italian)
+ * 1. All Italian titles to English (updates title field in place)
  * 2. All Italian descriptions that are missing English translations
- *
- * Uses 45-second delays between translations to avoid rate limiting.
- * Designed to run overnight for ~400+ properties.
  */
 
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
 import { queryAll, query, closePool } from "@/db";
-import { translate } from "@vitalets/google-translate-api";
 
 interface PropertyToTranslate {
   id: string;
@@ -22,34 +21,42 @@ interface PropertyToTranslate {
   description_en: string | null;
 }
 
-let lastTranslationTime = 0;
+/**
+ * Translate text using Google Cloud Translation API v2 (Basic/NMT)
+ */
+async function translateText(text: string): Promise<string | null> {
+  const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
+  if (!apiKey) {
+    console.error("GOOGLE_CLOUD_API_KEY not set");
+    return null;
+  }
 
-async function translateText(text: string, retryCount = 0): Promise<string | null> {
   try {
-    // Ensure at least 45 seconds between translations for overnight running
-    const timeSinceLastTranslation = Date.now() - lastTranslationTime;
-    const delayNeeded = Math.max(0, 45000 - timeSinceLastTranslation);
-    if (delayNeeded > 0) {
-      await new Promise((resolve) => setTimeout(resolve, delayNeeded));
+    const response = await fetch(
+      `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          q: text,
+          source: "it",
+          target: "en",
+          format: "text",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error(`  ⚠ API error: ${error.slice(0, 100)}`);
+      return null;
     }
 
-    lastTranslationTime = Date.now();
-
-    const result = await translate(text, {
-      from: "it",
-      to: "en",
-    });
-
-    return result.text;
+    const data = await response.json();
+    return data.data?.translations?.[0]?.translatedText || null;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    if (errorMessage.includes("Too Many Requests") && retryCount < 3) {
-      const waitTime = 180000 * (retryCount + 1); // 3 min, 6 min, 9 min
-      console.log(`  ⚠ Rate limited - waiting ${waitTime / 1000}s (retry ${retryCount + 1}/3)...`);
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return translateText(text, retryCount + 1);
-    }
-    console.log(`  ⚠ Translation error: ${errorMessage.slice(0, 50)}`);
+    console.error(`  ⚠ Translation error: ${errorMessage.slice(0, 50)}`);
     return null;
   }
 }
@@ -57,6 +64,7 @@ async function translateText(text: string, retryCount = 0): Promise<string | nul
 async function main() {
   console.log("=".repeat(60));
   console.log("TRANSLATING MISSING TITLES AND DESCRIPTIONS");
+  console.log("Using Google Cloud Translation API v2 (NMT)");
   console.log("=".repeat(60));
 
   // Get all properties that need translation
@@ -68,19 +76,15 @@ async function main() {
     ORDER BY updated_at DESC
   `);
 
-  // Count how many translations needed
+  // Count translations needed
   let translationsNeeded = 0;
   for (const prop of properties) {
     if (prop.title) translationsNeeded++;
     if (prop.description_it && !prop.description_en) translationsNeeded++;
   }
 
-  const estimatedMinutes = Math.ceil((translationsNeeded * 45) / 60);
-  const estimatedHours = (estimatedMinutes / 60).toFixed(1);
-
   console.log(`\nFound ${properties.length} properties to process`);
-  console.log(`Translations needed: ${translationsNeeded}`);
-  console.log(`Estimated time: ~${estimatedMinutes} minutes (~${estimatedHours} hours)\n`);
+  console.log(`Translations needed: ${translationsNeeded}\n`);
 
   let titlesTranslated = 0;
   let descriptionsTranslated = 0;
@@ -107,7 +111,7 @@ async function main() {
 
     // Translate description if missing English version
     if (prop.description_it && !prop.description_en) {
-      console.log(`  Translating description...`);
+      console.log(`  Translating description (${prop.description_it.length} chars)...`);
       descriptionEn = await translateText(prop.description_it);
       if (descriptionEn) {
         descriptionsTranslated++;
@@ -117,8 +121,7 @@ async function main() {
       }
     }
 
-    // Update database - store translated title in title field (replacing Italian)
-    // and update description_en
+    // Update database
     if (titleEn || (descriptionEn && !prop.description_en)) {
       await query(
         `UPDATE properties SET
@@ -129,6 +132,9 @@ async function main() {
         [titleEn, descriptionEn, prop.id]
       );
     }
+
+    // Small delay to avoid hitting rate limits (100 requests/second limit is generous)
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   console.log("\n" + "=".repeat(60));

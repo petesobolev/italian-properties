@@ -196,6 +196,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               <ContactForm
                 propertyId={property.id}
                 propertyTitle={property.title || `${typeLabel} in ${property.city}`}
+                propertyUrl={`https://italian-properties.vercel.app/property/${property.id}`}
                 sourceId={property.source_id}
                 sourceName={property.source_name}
               />
