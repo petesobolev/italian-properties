@@ -878,3 +878,16 @@ body::before {
 .force-desktop .lg\:max-w-none {
   max-width: none !important;
 }
+
+/* Force desktop md: flex layout */
+.force-desktop .md\:flex-row {
+  flex-direction: row !important;
+}
+
+.force-desktop .md\:items-center {
+  align-items: center !important;
+}
+
+.force-desktop .md\:justify-between {
+  justify-content: space-between !important;
+}
