@@ -5,9 +5,11 @@
  *
  * Allows visitors to send property inquiries to agents.
  * Pre-fills the message with property information.
+ * Protected by Cloudflare Turnstile CAPTCHA.
  */
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
 
 interface ContactFormProps {
   propertyId: string;
@@ -32,9 +34,18 @@ export function ContactForm({
   });
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!turnstileToken) {
+      setErrorMessage("Please complete the CAPTCHA verification");
+      setStatus("error");
+      return;
+    }
+
     setStatus("sending");
     setErrorMessage("");
 
@@ -47,6 +58,7 @@ export function ContactForm({
           propertyId,
           propertyTitle,
           sourceId,
+          turnstileToken,
         }),
       });
 
@@ -66,6 +78,9 @@ export function ContactForm({
     } catch (error) {
       setStatus("error");
       setErrorMessage(error instanceof Error ? error.message : "Failed to send message");
+      // Reset Turnstile on error so user can try again
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
     }
   };
 
@@ -166,10 +181,24 @@ export function ContactForm({
           </div>
         )}
 
-        {/* Submit button and privacy notice - aligned with message field */}
+        {/* Turnstile CAPTCHA and Submit button - aligned with message field */}
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="hidden sm:block" /> {/* Empty spacer for left column */}
-          <div className="space-y-2">
+          <div className="space-y-3">
+            {/* Turnstile CAPTCHA */}
+            {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                onSuccess={setTurnstileToken}
+                onError={() => setTurnstileToken(null)}
+                onExpire={() => setTurnstileToken(null)}
+                options={{
+                  theme: "light",
+                  size: "normal",
+                }}
+              />
+            )}
             <button
               type="submit"
               disabled={status === "sending"}

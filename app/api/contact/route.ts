@@ -4,11 +4,40 @@
  * Sends property inquiry emails to agents via Resend.
  * Emails are sent from info@supersavvytravelers.com with
  * "Referred by Super Savvy Travelers" attribution.
+ * Protected by Cloudflare Turnstile CAPTCHA.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { queryOne } from "@/db";
+
+/**
+ * Verify Turnstile CAPTCHA token with Cloudflare
+ */
+async function verifyTurnstileToken(token: string): Promise<boolean> {
+  const secretKey = process.env.TURNSTILE_SECRET_KEY;
+  if (!secretKey) {
+    console.warn("TURNSTILE_SECRET_KEY not set, skipping verification");
+    return true; // Allow through if not configured (for development)
+  }
+
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        secret: secretKey,
+        response: token,
+      }),
+    });
+
+    const data = await response.json();
+    return data.success === true;
+  } catch (error) {
+    console.error("Turnstile verification error:", error);
+    return false;
+  }
+}
 
 // Lazy initialization of Resend client
 let resend: Resend | null = null;
@@ -31,6 +60,7 @@ interface ContactRequest {
   propertyId: string;
   propertyTitle: string;
   sourceId: string;
+  turnstileToken?: string;
 }
 
 interface SourceInfo {
@@ -46,7 +76,25 @@ interface PropertyInfo {
 export async function POST(request: NextRequest) {
   try {
     const body: ContactRequest = await request.json();
-    const { name, email, phone, message, propertyId, propertyTitle, sourceId } = body;
+    const { name, email, phone, message, propertyId, propertyTitle, sourceId, turnstileToken } = body;
+
+    // Verify Turnstile CAPTCHA (if configured)
+    if (process.env.TURNSTILE_SECRET_KEY) {
+      if (!turnstileToken) {
+        return NextResponse.json(
+          { error: "CAPTCHA verification required" },
+          { status: 400 }
+        );
+      }
+
+      const isValidToken = await verifyTurnstileToken(turnstileToken);
+      if (!isValidToken) {
+        return NextResponse.json(
+          { error: "CAPTCHA verification failed" },
+          { status: 400 }
+        );
+      }
+    }
 
     // Validate required fields
     if (!name || !email || !message || !propertyId || !sourceId) {

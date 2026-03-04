@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Italian Properties - Architecture Diagram</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 40px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #c45d3a;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+
+    .diagram {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .section {
+      background: #fafafa;
+      border-radius: 12px;
+      padding: 20px;
+      border: 2px solid #e0e0e0;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .component {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-left: 4px solid #c45d3a;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .component:last-child {
+      margin-bottom: 0;
+    }
+
+    .component-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .component-tech {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .component-desc {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .two-cols {
+      grid-column: span 2;
+    }
+
+    .connections {
+      background: #f0f7ff;
+      border-radius: 12px;
+      padding: 25px;
+      margin-top: 30px;
+    }
+
+    .connections h2 {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .flow:last-child {
+      margin-bottom: 0;
+    }
+
+    .flow-item {
+      background: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      margin: 0 12px;
+      color: #c45d3a;
+      font-weight: bold;
+    }
+
+    .flow-desc {
+      color: #666;
+      font-size: 13px;
+      margin-left: 15px;
+    }
+
+    .tech-stack {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #e0e0e0;
+    }
+
+    .tech-item {
+      text-align: center;
+      padding: 15px;
+      background: #fafafa;
+      border-radius: 8px;
+    }
+
+    .tech-item .icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .tech-item .name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .tech-item .version {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .legend {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fff9f7;
+      border-radius: 8px;
+      border: 1px solid #f0e0dc;
+    }
+
+    .legend h3 {
+      font-size: 14px;
+      color: #c45d3a;
+      margin-bottom: 10px;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      font-size: 13px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 20px;
+      }
+      .container {
+        box-shadow: none;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Italian Properties - Architecture Diagram</h1>
+    <p class="subtitle">Next.js 16 Full-Stack Real Estate Platform</p>
+
+    <div class="diagram">
+      <!-- Frontend Layer -->
+      <div class="section">
+        <div class="section-title">Frontend (Client)</div>
+
+        <div class="component">
+          <div class="component-name">Public Pages</div>
+          <div class="component-tech">Next.js App Router + React</div>
+          <div class="component-desc">Home, Region listings, Property details, Archived listings</div>
+        </div>
+
+        <div class="component">
+          <div class="component-name">Admin Portal</div>
+          <div class="component-tech">React Client Components</div>
+          <div class="component-desc">Token-based agent dashboards for property management</div>
+        </div>
+
+        <div class="component">
+          <div class="component-name">Interactive Components</div>
+          <div class="component-tech">React + Leaflet</div>
+          <div class="component-desc">Image gallery, Map views, Contact form, Filters</div>
+        </div>
+      </div>
+
+      <!-- Backend Layer -->
+      <div class="section">
+        <div class="section-title">Backend (Server)</div>
+
+        <div class="component">
+          <div class="component-name">Server Components</div>
+          <div class="component-tech">Next.js RSC</div>
+          <div class="component-desc">Server-rendered pages with direct DB access</div>
+        </div>
+
+        <div class="component">
+          <div class="component-name">API Routes</div>
+          <div class="component-tech">Next.js Route Handlers</div>
+          <div class="component-desc">/api/contact, /api/admin/*, /api/search</div>
+        </div>
+
+        <div class="component">
+          <div class="component-name">Data Access Layer</div>
+          <div class="component-tech">TypeScript + pg</div>
+          <div class="component-desc">lib/properties.ts, lib/admin.ts, db/connection.ts</div>
+        </div>
+      </div>
+
+      <!-- External Services -->
+      <div class="section">
+        <div class="section-title">External Services</div>
+
+        <div class="component">
+          <div class="component-name">Supabase PostgreSQL</div>
+          <div class="component-tech">Database + RLS</div>
+          <div class="component-desc">Properties, Sources, Regions tables with Row Level Security</div>
+        </div>
+
+        <div class="component">
+          <div class="component-name">Vercel Blob</div>
+          <div class="component-tech">Object Storage</div>
+          <div class="component-desc">Property images, videos, agent logos</div>
+        </div>
+
+        <div class="component">
+          <div class="component-name">Resend</div>
+          <div class="component-tech">Email API</div>
+          <div class="component-desc">Property inquiry emails to agents</div>
+        </div>
+      </div>
+
+      <!-- Scrapers -->
+      <div class="section two-cols">
+        <div class="section-title">Data Ingestion (Scrapers)</div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="component">
+            <div class="component-name">Scraper Framework</div>
+            <div class="component-tech">TypeScript + node-html-parser</div>
+            <div class="component-desc">Common ingestion pipeline with upsert logic</div>
+          </div>
+
+          <div class="component">
+            <div class="component-name">Source Scrapers</div>
+            <div class="component-tech">Per-agency adapters</div>
+            <div class="component-desc">Vittori, Casa Amola (extensible)</div>
+          </div>
+
+          <div class="component">
+            <div class="component-name">Translation Service</div>
+            <div class="component-tech">Google Translate API</div>
+            <div class="component-desc">Italian → English for descriptions</div>
+          </div>
+
+          <div class="component">
+            <div class="component-name">Enrichment Scripts</div>
+            <div class="component-tech">Claude AI + Geocoding</div>
+            <div class="component-desc">Feature extraction, address geocoding</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hosting -->
+      <div class="section">
+        <div class="section-title">Hosting & Deployment</div>
+
+        <div class="component">
+          <div class="component-name">Vercel</div>
+          <div class="component-tech">Edge + Serverless</div>
+          <div class="component-desc">Auto-deploy from Git, environment variables, CDN</div>
+        </div>
+
+        <div class="component">
+          <div class="component-name">Domain</div>
+          <div class="component-tech">italianproperties.co</div>
+          <div class="component-desc">Custom domain with SSL</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Flow -->
+    <div class="connections">
+      <h2>Data Flow</h2>
+
+      <div class="flow">
+        <span class="flow-item">Browser</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">Next.js Server</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">PostgreSQL</span>
+        <span class="flow-desc">Page requests fetch data via Server Components</span>
+      </div>
+
+      <div class="flow">
+        <span class="flow-item">Contact Form</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">/api/contact</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">Resend API</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">Agent Email</span>
+      </div>
+
+      <div class="flow">
+        <span class="flow-item">Admin Upload</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">/api/admin/upload</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">Vercel Blob</span>
+        <span class="flow-desc">Images stored, URL saved to DB</span>
+      </div>
+
+      <div class="flow">
+        <span class="flow-item">Scraper</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">Source Website</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">Translate</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">PostgreSQL</span>
+      </div>
+
+      <div class="flow">
+        <span class="flow-item">Admin Portal</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">Token Validation</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">CRUD Operations</span>
+        <span class="flow-desc">Agents manage their own listings</span>
+      </div>
+    </div>
+
+    <!-- Tech Stack Summary -->
+    <div class="tech-stack">
+      <div class="tech-item">
+        <div class="icon">⚛️</div>
+        <div class="name">Next.js</div>
+        <div class="version">v16.1.4</div>
+      </div>
+      <div class="tech-item">
+        <div class="icon">🐘</div>
+        <div class="name">PostgreSQL</div>
+        <div class="version">Supabase</div>
+      </div>
+      <div class="tech-item">
+        <div class="icon">🎨</div>
+        <div class="name">Tailwind CSS</div>
+        <div class="version">v4</div>
+      </div>
+      <div class="tech-item">
+        <div class="icon">📦</div>
+        <div class="name">TypeScript</div>
+        <div class="version">Strict mode</div>
+      </div>
+      <div class="tech-item">
+        <div class="icon">🗺️</div>
+        <div class="name">Leaflet</div>
+        <div class="version">Maps</div>
+      </div>
+      <div class="tech-item">
+        <div class="icon">📧</div>
+        <div class="name">Resend</div>
+        <div class="version">Email</div>
+      </div>
+      <div class="tech-item">
+        <div class="icon">🗄️</div>
+        <div class="name">Vercel Blob</div>
+        <div class="version">Storage</div>
+      </div>
+      <div class="tech-item">
+        <div class="icon">🌍</div>
+        <div class="name">Google Translate</div>
+        <div class="version">API</div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <h3>Database Schema (Key Tables)</h3>
+      <div class="legend-grid">
+        <div class="legend-item">
+          <strong>properties</strong> - Listings with details, images, coordinates
+        </div>
+        <div class="legend-item">
+          <strong>sources</strong> - Agencies with admin tokens, logos, contact emails
+        </div>
+        <div class="legend-item">
+          <strong>regions</strong> - Tuscany, Calabria, Puglia
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
