@@ -152,6 +152,9 @@ export default function VideoUploader({ videos, onChange, token }: VideoUploader
             const isYouTube = isYouTubeUrl(url);
             const thumbnail = isYouTube ? getYouTubeThumbnail(url) : null;
 
+            // Extract filename from URL for uploaded videos
+            const filename = !isYouTube ? url.split('/').pop()?.split('?')[0] || 'Video' : null;
+
             return (
               <div
                 key={index}
@@ -169,25 +172,40 @@ export default function VideoUploader({ videos, onChange, token }: VideoUploader
                     <video
                       src={url}
                       className="w-full h-full object-cover"
-                      muted
+                      controls
                       preload="metadata"
                     />
                   )}
-                  {/* Play icon overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
+                  {/* Play icon overlay - only for YouTube */}
+                  {isYouTube && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {/* YouTube badge */}
                   {isYouTube && (
                     <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded">
                       YouTube
                     </div>
                   )}
+                  {/* Uploaded video badge */}
+                  {!isYouTube && (
+                    <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded">
+                      Uploaded
+                    </div>
+                  )}
                 </div>
+
+                {/* Filename for uploaded videos */}
+                {!isYouTube && filename && (
+                  <div className="px-2 py-1.5 bg-gray-200 dark:bg-gray-600 text-xs text-gray-600 dark:text-gray-300 truncate">
+                    {filename}
+                  </div>
+                )}
 
                 {/* Actions overlay */}
                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
