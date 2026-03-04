@@ -13,6 +13,7 @@ import { ImageGallery } from "@/components/ImageGallery";
 import { PropertyFeatures } from "@/components/PropertyFeatures";
 import { PropertyLocationMap } from "@/components/PropertyLocationMap";
 import { PropertyVideos } from "@/components/PropertyVideos";
+import { ContactForm } from "@/components/ContactForm";
 
 interface PropertyPageProps {
   params: Promise<{
@@ -187,6 +188,16 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                 address={property.address}
                 city={property.city}
                 precision={property.location_precision}
+              />
+            )}
+
+            {/* Contact Form - shown when agent has contact email configured */}
+            {property.source_contact_email && (
+              <ContactForm
+                propertyId={property.id}
+                propertyTitle={property.title || `${typeLabel} in ${property.city}`}
+                sourceId={property.source_id}
+                sourceName={property.source_name}
               />
             )}
           </div>

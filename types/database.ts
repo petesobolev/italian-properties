@@ -45,6 +45,7 @@ export interface Source {
   is_active: boolean;   // Whether to include in scraping runs
   admin_token: string | null;  // Token for admin portal access
   logo_url: string | null;     // Agent/agency logo URL
+  contact_email: string | null; // Email for receiving property inquiries
   created_at: Date;
 }
 
@@ -174,8 +175,10 @@ export interface PropertyUpdate {
 export interface PropertyWithDetails extends Property {
   region_name: string;
   region_slug: string;
+  source_id: string;
   source_name: string;
   source_base_url: string;
+  source_contact_email: string | null;
 }
 
 /**

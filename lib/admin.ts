@@ -36,7 +36,7 @@ export async function validateToken(token: string): Promise<Source | null> {
 
   try {
     const source = await db.queryOne<Source>(
-      `SELECT id, name, base_url, is_active, admin_token, logo_url, created_at
+      `SELECT id, name, base_url, is_active, admin_token, logo_url, contact_email, created_at
        FROM sources
        WHERE admin_token = $1`,
       [token]
@@ -469,6 +469,28 @@ export async function updateSourceLogo(
     return result.rowCount !== null && result.rowCount > 0;
   } catch (error) {
     console.error("Error updating source logo:", error);
+    return false;
+  }
+}
+
+/**
+ * Update source contact email
+ */
+export async function updateSourceContactEmail(
+  sourceId: string,
+  contactEmail: string | null
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  try {
+    const result = await db.query(
+      `UPDATE sources SET contact_email = $1 WHERE id = $2`,
+      [contactEmail, sourceId]
+    );
+    return result.rowCount !== null && result.rowCount > 0;
+  } catch (error) {
+    console.error("Error updating source contact email:", error);
     return false;
   }
 }

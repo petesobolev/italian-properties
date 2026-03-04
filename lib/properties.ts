@@ -179,8 +179,10 @@ export async function getPropertyById(
         p.*,
         r.name as region_name,
         r.slug as region_slug,
+        s.id as source_id,
         s.name as source_name,
-        s.base_url as source_base_url
+        s.base_url as source_base_url,
+        s.contact_email as source_contact_email
       FROM properties p
       JOIN regions r ON p.region_id = r.id
       JOIN sources s ON p.source_id = s.id

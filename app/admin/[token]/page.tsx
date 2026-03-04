@@ -11,6 +11,7 @@ import { notFound } from "next/navigation";
 import { validateToken, getPropertiesBySource } from "@/lib/admin";
 import AdminPropertyList from "@/components/admin/AdminPropertyList";
 import LogoUploader from "@/components/admin/LogoUploader";
+import ContactEmailEditor from "@/components/admin/ContactEmailEditor";
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -65,8 +66,8 @@ export default async function AdminDashboardPage({ params }: Props) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        {/* Stats and Settings */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div className="text-sm text-gray-500 dark:text-gray-400">Total Properties</div>
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -85,6 +86,7 @@ export default async function AdminDashboardPage({ params }: Props) {
               {properties.filter((p) => p.sale_status !== "available").length}
             </div>
           </div>
+          <ContactEmailEditor currentEmail={source.contact_email} token={token} />
         </div>
 
         {/* Property List */}
