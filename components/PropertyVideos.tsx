@@ -56,7 +56,7 @@ export function PropertyVideos({ videos }: PropertyVideosProps) {
           />
         ) : (
           <video
-            src={currentVideo}
+            src={`${currentVideo}#t=0.1`}
             controls
             className="w-full h-full object-contain"
             preload="metadata"
@@ -92,7 +92,7 @@ export function PropertyVideos({ videos }: PropertyVideosProps) {
                   />
                 ) : (
                   <video
-                    src={video}
+                    src={`${video}#t=0.1`}
                     className="w-full h-full object-cover"
                     muted
                     preload="metadata"
