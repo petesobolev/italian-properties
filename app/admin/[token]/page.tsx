@@ -8,7 +8,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { validateToken, getPropertiesBySource } from "@/lib/admin";
+import { validateToken, getPropertiesBySource, getSubmissionCount } from "@/lib/admin";
 import AdminPropertyList from "@/components/admin/AdminPropertyList";
 import LogoUploader from "@/components/admin/LogoUploader";
 import ContactEmailEditor from "@/components/admin/ContactEmailEditor";
@@ -31,8 +31,11 @@ export default async function AdminDashboardPage({ params }: Props) {
     notFound();
   }
 
-  // Get properties for this source
-  const properties = await getPropertiesBySource(source.id);
+  // Get properties and submission count for this source
+  const [properties, submissionCount] = await Promise.all([
+    getPropertiesBySource(source.id),
+    getSubmissionCount(source.id),
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -67,7 +70,7 @@ export default async function AdminDashboardPage({ params }: Props) {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats and Settings */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div className="text-sm text-gray-500 dark:text-gray-400">Total Properties</div>
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -86,6 +89,22 @@ export default async function AdminDashboardPage({ params }: Props) {
               {properties.filter((p) => p.sale_status !== "available").length}
             </div>
           </div>
+          <Link
+            href={`/admin/${token}/submissions`}
+            className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 transition-colors group"
+          >
+            <div className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+              Inquiries
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {submissionCount}
+              </span>
+              <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
           <ContactEmailEditor currentEmail={source.contact_email} token={token} />
         </div>
 

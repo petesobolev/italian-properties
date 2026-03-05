@@ -494,3 +494,22 @@ export async function updateSourceContactEmail(
     return false;
   }
 }
+
+/**
+ * Get count of contact submissions for a source
+ */
+export async function getSubmissionCount(sourceId: string): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  try {
+    const result = await db.queryOne<{ count: string }>(
+      `SELECT COUNT(*) as count FROM contact_submissions WHERE source_id = $1`,
+      [sourceId]
+    );
+    return result ? parseInt(result.count, 10) : 0;
+  } catch (error) {
+    console.error("Error fetching submission count:", error);
+    return 0;
+  }
+}
