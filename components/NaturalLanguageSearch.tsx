@@ -75,7 +75,7 @@ export function NaturalLanguageSearch({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={placeholder}
-              className="w-full px-4 py-3 pl-12 rounded-lg border border-[var(--color-sand)] bg-white dark:bg-gray-800 dark:border-gray-700 text-[var(--color-text)] dark:text-gray-200 placeholder:text-[var(--color-text-light)] focus:outline-none focus:ring-2 focus:ring-[var(--color-terracotta)] focus:border-transparent transition-shadow"
+              className="search-input w-full px-4 py-3 pl-12 rounded-lg border border-[var(--color-sand)] dark:border-gray-700 text-[var(--color-text)] dark:text-gray-200 placeholder:text-[var(--color-text-light)] focus:outline-none focus:ring-2 focus:ring-[var(--color-terracotta)] focus:border-transparent transition-shadow"
             />
             {/* Search Icon */}
             <svg

@@ -378,6 +378,19 @@ body::before {
 }
 
 /* ============================================================================
+   SEARCH INPUT
+   ============================================================================ */
+
+/* Natural language search input - force white background */
+.search-input {
+  background-color: #FFFFFF !important;
+}
+
+.dark .search-input {
+  background-color: #1f2937 !important; /* gray-800 */
+}
+
+/* ============================================================================
    FILTER COMPONENTS
    ============================================================================ */
 
