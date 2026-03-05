@@ -6,7 +6,7 @@
  * Displays contact form submissions in a table format.
  */
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 interface ContactSubmission {
   id: string;
@@ -143,8 +143,8 @@ export default function SubmissionsList({ token }: SubmissionsListProps) {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {submissions.map((submission) => (
-                <>
-                  <tr key={submission.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <React.Fragment key={submission.id}>
+                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                       {formatDate(submission.created_at)}
                     </td>
@@ -206,7 +206,7 @@ export default function SubmissionsList({ token }: SubmissionsListProps) {
                     </td>
                   </tr>
                   {expandedId === submission.id && (
-                    <tr key={`${submission.id}-expanded`}>
+                    <tr>
                       <td colSpan={6} className="px-4 py-4 bg-gray-50 dark:bg-gray-900">
                         <div className="text-sm">
                           <div className="font-medium text-gray-700 dark:text-gray-300 mb-2">Message:</div>
@@ -223,7 +223,7 @@ export default function SubmissionsList({ token }: SubmissionsListProps) {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
