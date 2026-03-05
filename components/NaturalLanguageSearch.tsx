@@ -67,17 +67,16 @@ export function NaturalLanguageSearch({
   return (
     <div className="space-y-6">
       {/* Search Form */}
-      <div className="bg-[var(--color-cream)] dark:bg-gray-800 rounded-xl border border-[var(--color-sand)] dark:border-gray-700 p-4">
-        <form onSubmit={handleSearch} className="relative">
-          <div className="flex gap-3">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={placeholder}
-                className="w-full px-4 py-3 pl-12 rounded-lg border border-[var(--color-sand)] bg-white dark:bg-gray-700 dark:border-gray-600 text-[var(--color-text)] dark:text-gray-200 placeholder:text-[var(--color-text-light)] focus:outline-none focus:ring-2 focus:ring-[var(--color-terracotta)] focus:border-transparent transition-shadow"
-              />
+      <form onSubmit={handleSearch} className="relative">
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={placeholder}
+              className="w-full px-4 py-3 pl-12 rounded-lg border border-[var(--color-sand)] bg-white dark:bg-gray-800 dark:border-gray-700 text-[var(--color-text)] dark:text-gray-200 placeholder:text-[var(--color-text-light)] focus:outline-none focus:ring-2 focus:ring-[var(--color-terracotta)] focus:border-transparent transition-shadow"
+            />
             {/* Search Icon */}
             <svg
               className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-light)]"
@@ -125,9 +124,8 @@ export function NaturalLanguageSearch({
               "Search"
             )}
           </button>
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
 
       {/* Results */}
       {hasSearched && (
