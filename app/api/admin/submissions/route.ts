@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { validateToken } from "@/lib/admin";
-import { query } from "@/db";
+import { queryAll } from "@/db";
 
 interface ContactSubmission {
   id: string;
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch submissions for this source
-    const submissions = await query<ContactSubmission>(
+    const submissions = await queryAll<ContactSubmission>(
       `SELECT
         id,
         submitter_name,
