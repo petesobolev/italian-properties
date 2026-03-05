@@ -12,6 +12,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { validateToken } from "@/lib/admin";
 
+// Increase max duration for video uploads (60 seconds on Pro, 10s on Hobby)
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     // Get token from header

@@ -4,10 +4,12 @@
  * Video Uploader Component
  *
  * Allows agents to upload videos or add YouTube embed URLs.
- * Supports both direct file uploads (to Vercel Blob) and YouTube links.
+ * Uses Vercel Blob client-side uploads for large video files,
+ * bypassing the 4.5MB serverless function limit.
  */
 
 import { useState, useRef } from "react";
+import { upload } from "@vercel/blob/client";
 
 interface VideoUploaderProps {
   videos: string[];
@@ -74,23 +76,25 @@ export default function VideoUploader({ videos, onChange, token }: VideoUploader
     setUploading(true);
 
     try {
-      const formData = new FormData();
-      videoFiles.forEach((file) => formData.append("files", file));
+      const uploadedUrls: string[] = [];
 
-      const response = await fetch("/api/admin/upload?type=video", {
-        method: "POST",
-        headers: {
-          "X-Admin-Token": token,
-        },
-        body: formData,
-      });
+      // Upload each video using client-side upload (bypasses 4.5MB limit)
+      for (const file of videoFiles) {
+        const timestamp = Date.now();
+        const randomStr = Math.random().toString(36).substring(7);
+        const extension = file.name.split(".").pop() || "mp4";
+        const pathname = `videos/${timestamp}-${randomStr}.${extension}`;
 
-      if (!response.ok) {
-        throw new Error("Upload failed");
+        const blob = await upload(pathname, file, {
+          access: "public",
+          handleUploadUrl: "/api/admin/upload-video",
+          clientPayload: JSON.stringify({ token }),
+        });
+
+        uploadedUrls.push(blob.url);
       }
 
-      const { urls } = await response.json();
-      onChange([...videos, ...urls]);
+      onChange([...videos, ...uploadedUrls]);
     } catch (error) {
       console.error("Video upload error:", error);
       alert("Failed to upload videos. Please try again.");
