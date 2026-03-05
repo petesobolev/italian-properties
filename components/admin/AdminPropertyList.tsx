@@ -139,9 +139,18 @@ export default function AdminPropertyList({ properties, token }: AdminPropertyLi
                 {statusBadge.label}
               </div>
               {/* Image count */}
-              {property.image_urls.length > 1 && (
+              {property.image_urls.length > 0 && (
                 <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                  {property.image_urls.length} photos
+                  {property.image_urls.length} photo{property.image_urls.length !== 1 ? "s" : ""}
+                </div>
+              )}
+              {/* Video count */}
+              {property.video_urls && property.video_urls.length > 0 && (
+                <div className="absolute bottom-2 left-2 bg-blue-600/90 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  {property.video_urls.length} video{property.video_urls.length !== 1 ? "s" : ""}
                 </div>
               )}
             </div>
