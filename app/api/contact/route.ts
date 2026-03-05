@@ -5,11 +5,12 @@
  * Emails are sent from info@supersavvytravelers.com with
  * "Referred by Super Savvy Travelers" attribution.
  * Protected by Cloudflare Turnstile CAPTCHA.
+ * All submissions are logged to the database for tracking.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { queryOne } from "@/db";
+import { queryOne, query } from "@/db";
 
 /**
  * Verify Turnstile CAPTCHA token with Cloudflare
@@ -71,6 +72,57 @@ interface SourceInfo {
 interface PropertyInfo {
   listing_url: string;
   city: string;
+}
+
+/**
+ * Log contact form submission to database
+ */
+async function logSubmission(params: {
+  submitterName: string;
+  submitterEmail: string;
+  submitterPhone?: string;
+  message: string;
+  propertyId: string;
+  propertyTitle?: string;
+  agentEmail: string;
+  sourceId: string;
+  sourceName: string;
+  emailSent: boolean;
+  emailError?: string;
+}) {
+  try {
+    await query(
+      `INSERT INTO contact_submissions (
+        submitter_name,
+        submitter_email,
+        submitter_phone,
+        message,
+        property_id,
+        property_title,
+        agent_email,
+        source_id,
+        source_name,
+        email_sent,
+        email_error
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        params.submitterName,
+        params.submitterEmail,
+        params.submitterPhone || null,
+        params.message,
+        params.propertyId,
+        params.propertyTitle || null,
+        params.agentEmail,
+        params.sourceId,
+        params.sourceName,
+        params.emailSent,
+        params.emailError || null,
+      ]
+    );
+  } catch (error) {
+    // Log but don't fail the request if logging fails
+    console.error("Failed to log contact submission:", error);
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -186,7 +238,7 @@ https://supersavvytravelers.com
     `.trim();
 
     // Send email via Resend
-    const { error } = await getResend().emails.send({
+    const { error: emailError } = await getResend().emails.send({
       from: "Italian Properties <info@supersavvytravelers.com>",
       to: source.contact_email,
       replyTo: email,
@@ -195,8 +247,23 @@ https://supersavvytravelers.com
       text: emailText,
     });
 
-    if (error) {
-      console.error("Resend error:", error);
+    // Log submission to database (regardless of email success)
+    await logSubmission({
+      submitterName: name,
+      submitterEmail: email,
+      submitterPhone: phone,
+      message,
+      propertyId,
+      propertyTitle,
+      agentEmail: source.contact_email,
+      sourceId,
+      sourceName: source.name,
+      emailSent: !emailError,
+      emailError: emailError?.message,
+    });
+
+    if (emailError) {
+      console.error("Resend error:", emailError);
       return NextResponse.json(
         { error: "Failed to send email" },
         { status: 500 }
