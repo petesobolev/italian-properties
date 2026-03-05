@@ -904,3 +904,36 @@ body::before {
 .force-desktop .md\:justify-between {
   justify-content: space-between !important;
 }
+
+/* Force desktop lg: grid column spans (for property detail page) */
+.force-desktop .lg\:col-span-2 {
+  grid-column: span 2 / span 2 !important;
+}
+
+.force-desktop .lg\:col-span-1 {
+  grid-column: span 1 / span 1 !important;
+}
+
+/* Force desktop lg: sticky positioning */
+.force-desktop .lg\:sticky {
+  position: sticky !important;
+}
+
+.force-desktop .lg\:top-24 {
+  top: 6rem !important;
+}
+
+/* Force desktop sm: padding and text for property page */
+.force-desktop .sm\:py-12 {
+  padding-top: 3rem !important;
+  padding-bottom: 3rem !important;
+}
+
+.force-desktop .sm\:p-8 {
+  padding: 2rem !important;
+}
+
+.force-desktop .sm\:text-3xl {
+  font-size: 1.875rem !important;
+  line-height: 2.25rem !important;
+}
