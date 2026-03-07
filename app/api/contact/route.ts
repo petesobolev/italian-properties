@@ -60,6 +60,7 @@ interface ContactRequest {
   message: string;
   propertyId: string;
   propertyTitle: string;
+  propertyUrl: string;
   sourceId: string;
   turnstileToken?: string;
 }
@@ -128,7 +129,7 @@ async function logSubmission(params: {
 export async function POST(request: NextRequest) {
   try {
     const body: ContactRequest = await request.json();
-    const { name, email, phone, message, propertyId, propertyTitle, sourceId, turnstileToken } = body;
+    const { name, email, phone, message, propertyId, propertyTitle, propertyUrl, sourceId, turnstileToken } = body;
 
     // Verify Turnstile CAPTCHA (if configured)
     if (process.env.TURNSTILE_SECRET_KEY) {
@@ -188,7 +189,7 @@ export async function POST(request: NextRequest) {
         <h2 style="color: #c45d3a;">New Property Inquiry</h2>
 
         <div style="background: #f9f7f4; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0; color: #333;">Property: ${propertyTitle || "Property Inquiry"}</h3>
+          <h3 style="margin-top: 0; color: #333;">Property: ${propertyUrl ? `<a href="${propertyUrl}" style="color: #c45d3a; text-decoration: none;">${propertyTitle || "View Property"}</a>` : (propertyTitle || "Property Inquiry")}</h3>
           ${property?.city ? `<p style="color: #666; margin: 5px 0;">Location: ${property.city}</p>` : ""}
           ${property?.listing_url ? `<p style="margin: 5px 0;"><a href="${property.listing_url}" style="color: #c45d3a;">View Original Listing</a></p>` : ""}
         </div>
@@ -219,8 +220,9 @@ export async function POST(request: NextRequest) {
 New Property Inquiry
 
 Property: ${propertyTitle || "Property Inquiry"}
+${propertyUrl ? `View Property: ${propertyUrl}` : ""}
 ${property?.city ? `Location: ${property.city}` : ""}
-${property?.listing_url ? `View Listing: ${property.listing_url}` : ""}
+${property?.listing_url ? `View Original Listing: ${property.listing_url}` : ""}
 
 Contact Details
 ---------------

@@ -26,7 +26,7 @@ export function ContactForm({
   sourceId,
   sourceName,
 }: ContactFormProps) {
-  const defaultMessage = `Please send me more information on ${propertyTitle || "this property"}.\n\n${propertyUrl}`;
+  const defaultMessage = `Please send me more information on ${propertyTitle || "this property"}.`;
 
   const [formData, setFormData] = useState({
     name: "",
@@ -59,6 +59,7 @@ export function ContactForm({
           ...formData,
           propertyId,
           propertyTitle,
+          propertyUrl,
           sourceId,
           turnstileToken,
         }),
