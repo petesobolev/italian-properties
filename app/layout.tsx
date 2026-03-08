@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { ThemeProvider, ThemeScript } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DesktopLayoutEnforcer } from "@/components/DesktopLayoutEnforcer";
+import { IframeHeightBroadcaster } from "@/components/IframeHeightBroadcaster";
 import "./globals.css";
 
 /**
@@ -56,6 +57,7 @@ export default function RootLayout({
       <body className="min-h-screen antialiased">
         <Suspense fallback={null}>
           <DesktopLayoutEnforcer />
+          <IframeHeightBroadcaster />
         </Suspense>
         <ThemeProvider>
         {/* Elegant Header */}
