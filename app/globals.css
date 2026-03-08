@@ -134,6 +134,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Prevent horizontal scrolling on mobile */
+@media (max-width: 639px) {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+}
+
 /* Subtle grain texture overlay for warmth */
 body::before {
   content: '';
@@ -1004,5 +1012,57 @@ body::before {
 @media (min-width: 640px) {
   .mobile-filters-bar {
     display: none;
+  }
+}
+
+/* ============================================================================
+   MOBILE VIEWPORT PROTECTION
+   Ensure content doesn't overflow on small screens regardless of force-desktop
+   ============================================================================ */
+
+/* Prevent horizontal overflow on property detail page */
+.property-detail-container {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* On very small screens, override force-desktop grid behavior */
+@media (max-width: 639px) {
+  /* Reset grid to single column on mobile */
+  .force-desktop .lg\:grid-cols-3,
+  .mobile-single-column {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reset column spans to full width */
+  .force-desktop .lg\:col-span-2,
+  .force-desktop .lg\:col-span-1 {
+    grid-column: span 1 / span 1 !important;
+  }
+
+  /* Ensure images don't overflow */
+  .force-desktop img,
+  .force-desktop video {
+    max-width: 100% !important;
+  }
+
+  /* Reset text sizes that might be too large */
+  .force-desktop .lg\:text-7xl,
+  .force-desktop .lg\:text-6xl,
+  .force-desktop .lg\:text-5xl {
+    font-size: 2rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Reset sidebar sticky behavior on mobile */
+  .force-desktop .lg\:sticky {
+    position: relative !important;
+  }
+
+  /* Ensure containers respect viewport */
+  .force-desktop .max-w-7xl {
+    max-width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 }
