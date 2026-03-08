@@ -937,3 +937,49 @@ body::before {
   font-size: 1.875rem !important;
   line-height: 2.25rem !important;
 }
+
+/* ============================================================================
+   MOBILE FILTERS BAR
+   Compact horizontal filter bar for mobile portrait mode
+   ============================================================================ */
+
+.mobile-filter-select {
+  padding: 0.5rem 1.75rem 0.5rem 0.625rem;
+  font-size: 0.8125rem;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background-color: white;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B635B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  border: 1px solid var(--color-sand);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  appearance: none;
+  -webkit-appearance: none;
+  white-space: nowrap;
+}
+
+.mobile-filter-select:focus {
+  outline: none;
+  border-color: var(--color-terracotta);
+}
+
+.mobile-filter-active {
+  border-color: var(--color-terracotta);
+  background-color: var(--color-terracotta-light);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%232D2926' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* Dark mode mobile filter select */
+.dark .mobile-filter-select {
+  background-color: var(--color-stone-dark);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A0A0A0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+.dark .mobile-filter-active {
+  background-color: var(--color-terracotta);
+  color: white;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}

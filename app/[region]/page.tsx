@@ -13,6 +13,7 @@ import { Suspense } from "react";
 import { getPropertiesByRegion, getRegion } from "@/lib/properties";
 import { PropertyGrid, PropertyGridHeader } from "@/components/PropertyGrid";
 import { PropertyFilters } from "@/components/PropertyFilters";
+import { MobileFiltersBar } from "@/components/MobileFiltersBar";
 import { ViewToggle } from "@/components/ViewToggle";
 import { RegionMapView } from "@/components/RegionMapView";
 import { NaturalLanguageSearch } from "@/components/NaturalLanguageSearch";
@@ -209,9 +210,14 @@ export default async function RegionPage({ params, searchParams }: RegionPagePro
 
       {/* Listings Section with Filters */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        {/* Mobile Filters Bar - Compact horizontal filters for portrait mode */}
+        <Suspense fallback={null}>
+          <MobileFiltersBar />
+        </Suspense>
+
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar - Always visible for UI preview */}
-          <div className="lg:w-72 flex-shrink-0">
+          {/* Filters Sidebar - Hidden on mobile portrait, visible on sm+ */}
+          <div className="hidden sm:block lg:w-72 flex-shrink-0">
             <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto scrollbar-thin">
               <Suspense fallback={<FiltersSkeleton />}>
                 <PropertyFilters />
