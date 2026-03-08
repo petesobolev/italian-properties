@@ -101,7 +101,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     || await translateToEnglish(property.description_it);
 
   return (
-    <div className="min-h-screen bg-[var(--color-stone)]">
+    <div className="min-h-screen bg-[var(--color-stone)] overflow-x-hidden">
       {/* Breadcrumb Navigation */}
       <div className="bg-[var(--color-cream)] border-b border-[var(--color-sand)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -127,10 +127,10 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 overflow-x-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Main Content - Left Column */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8 min-w-0">
             {/* Image Gallery */}
             <ImageGallery
               images={property.image_urls || []}
@@ -204,7 +204,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
           </div>
 
           {/* Sidebar - Right Column */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 min-w-0">
             <div className="lg:sticky lg:top-24 space-y-6">
               {/* Price Card */}
               <div
