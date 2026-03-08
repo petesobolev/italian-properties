@@ -211,13 +211,15 @@ export default async function RegionPage({ params, searchParams }: RegionPagePro
       {/* Listings Section with Filters */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         {/* Mobile Filters Bar - Compact horizontal filters for portrait mode */}
-        <Suspense fallback={null}>
-          <MobileFiltersBar />
-        </Suspense>
+        <div className="mobile-filters-bar">
+          <Suspense fallback={null}>
+            <MobileFiltersBar />
+          </Suspense>
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar - Hidden on mobile portrait, visible on sm+ */}
-          <div className="hidden sm:block lg:w-72 flex-shrink-0">
+          <div className="mobile-filters-sidebar lg:w-72 flex-shrink-0">
             <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto scrollbar-thin">
               <Suspense fallback={<FiltersSkeleton />}>
                 <PropertyFilters />

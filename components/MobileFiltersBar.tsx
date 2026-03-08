@@ -95,7 +95,7 @@ export function MobileFiltersBar() {
   ].filter(Boolean).length;
 
   return (
-    <div className="sm:hidden mb-4">
+    <div className="mb-4">
       {/* Main filter row */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {/* Sort dropdown */}
