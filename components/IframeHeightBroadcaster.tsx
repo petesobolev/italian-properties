@@ -33,8 +33,8 @@ export function IframeHeightBroadcaster() {
       if (main) {
         const rect = main.getBoundingClientRect();
         const mainBottom = rect.bottom + window.scrollY;
-        // Add header height (approximately 80px) plus buffer
-        return Math.ceil(mainBottom) + 50;
+        // Small buffer for any bottom margins
+        return Math.ceil(mainBottom) + 10;
       }
 
       // Fallback: find bottom of body children
@@ -53,7 +53,7 @@ export function IframeHeightBroadcaster() {
         }
       }
 
-      return Math.ceil(maxBottom) + 50;
+      return Math.ceil(maxBottom) + 10;
     };
 
     const sendHeight = (force = false) => {
