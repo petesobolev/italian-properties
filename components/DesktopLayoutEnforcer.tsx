@@ -22,7 +22,10 @@ const MOBILE_BREAKPOINT = 640; // Don't force desktop below this width
 
 export function DesktopLayoutEnforcer() {
   const searchParams = useSearchParams();
-  const urlHasDesktopParam = searchParams.get("layout") === "desktop";
+  // Support both ?layout=desktop and ?desktop=1 for backwards compatibility
+  const urlHasDesktopParam =
+    searchParams.get("layout") === "desktop" ||
+    searchParams.get("desktop") === "1";
 
   useEffect(() => {
     // Function to update force-desktop class based on viewport
