@@ -5,6 +5,7 @@ import { ThemeProvider, ThemeScript } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DesktopLayoutEnforcer } from "@/components/DesktopLayoutEnforcer";
 import { IframeHeightBroadcaster } from "@/components/IframeHeightBroadcaster";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import "./globals.css";
 
 /**
@@ -58,6 +59,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <DesktopLayoutEnforcer />
           <IframeHeightBroadcaster />
+          <ScrollToTop />
         </Suspense>
         <ThemeProvider>
         {/* Elegant Header */}
