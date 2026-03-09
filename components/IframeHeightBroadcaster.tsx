@@ -10,9 +10,6 @@
 
 import { useEffect } from "react";
 
-// Extra padding to ensure content isn't cut off
-const HEIGHT_BUFFER = 100;
-
 export function IframeHeightBroadcaster() {
   useEffect(() => {
     // Only run if we're in an iframe
@@ -20,21 +17,35 @@ export function IframeHeightBroadcaster() {
       return;
     }
 
-    const sendHeight = () => {
-      // Get the maximum height from multiple sources to ensure we capture everything
-      const scrollHeight = document.documentElement.scrollHeight;
-      const bodyScrollHeight = document.body.scrollHeight;
-      const bodyOffsetHeight = document.body.offsetHeight;
+    const getContentHeight = () => {
+      // Find the actual bottom of content by checking all direct children of body
+      // This avoids feedback loops from scrollHeight which includes the iframe's own height
+      const body = document.body;
+      const children = body.children;
+      let maxBottom = 0;
 
-      // Use the maximum of all measurements plus buffer
-      const height = Math.max(scrollHeight, bodyScrollHeight, bodyOffsetHeight) + HEIGHT_BUFFER;
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i] as HTMLElement;
+        const rect = child.getBoundingClientRect();
+        const bottom = rect.bottom + window.scrollY;
+        if (bottom > maxBottom) {
+          maxBottom = bottom;
+        }
+      }
+
+      // Add a small buffer for any margins/padding
+      return Math.ceil(maxBottom) + 50;
+    };
+
+    const sendHeight = () => {
+      const height = getContentHeight();
 
       window.parent.postMessage(
         {
           type: "iframe-height",
           height: height,
         },
-        "*" // Allow any origin since we don't know which sites embed us
+        "*"
       );
     };
 
@@ -60,6 +71,7 @@ export function IframeHeightBroadcaster() {
     const initialTimeout1 = setTimeout(sendHeight, 100);
     const initialTimeout2 = setTimeout(sendHeight, 500);
     const initialTimeout3 = setTimeout(sendHeight, 1000);
+    const initialTimeout4 = setTimeout(sendHeight, 2000);
 
     // Also wait for images
     waitForImages();
@@ -67,40 +79,32 @@ export function IframeHeightBroadcaster() {
     // Send height on resize
     window.addEventListener("resize", sendHeight);
 
-    // Send height when images load
+    // Send height when page fully loads
     window.addEventListener("load", sendHeight);
 
     // Observe DOM changes that might affect height
     const observer = new MutationObserver(() => {
-      // Debounce the height update
-      setTimeout(sendHeight, 50);
+      setTimeout(sendHeight, 100);
     });
 
     observer.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
-      characterData: true,
     });
 
-    // Also observe resize of images and other media
-    const resizeObserver = new ResizeObserver(() => {
-      sendHeight();
-    });
-    resizeObserver.observe(document.body);
-
-    // Send height periodically to catch any missed updates
-    const interval = setInterval(sendHeight, 500);
+    // Send height periodically but less frequently
+    const interval = setInterval(sendHeight, 1000);
 
     return () => {
       clearTimeout(initialTimeout1);
       clearTimeout(initialTimeout2);
       clearTimeout(initialTimeout3);
+      clearTimeout(initialTimeout4);
       clearInterval(interval);
       window.removeEventListener("resize", sendHeight);
       window.removeEventListener("load", sendHeight);
       observer.disconnect();
-      resizeObserver.disconnect();
     };
   }, []);
 
