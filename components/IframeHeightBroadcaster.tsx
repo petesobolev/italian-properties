@@ -8,24 +8,44 @@
  * eliminating the need for a scrollbar within the iframe.
  */
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 export function IframeHeightBroadcaster() {
+  const pathname = usePathname();
+  const lastSentHeight = useRef<number>(0);
+  const sendCount = useRef<number>(0);
+  const maxSendsPerPage = 10; // Limit updates to prevent infinite loops
+
   useEffect(() => {
     // Only run if we're in an iframe
     if (window.self === window.top) {
       return;
     }
 
+    // Reset counters on page change
+    lastSentHeight.current = 0;
+    sendCount.current = 0;
+
     const getContentHeight = () => {
-      // Find the actual bottom of content by checking all direct children of body
-      // This avoids feedback loops from scrollHeight which includes the iframe's own height
+      // Use the main content element if available, otherwise body children
+      const main = document.querySelector("main");
+      if (main) {
+        const rect = main.getBoundingClientRect();
+        const mainBottom = rect.bottom + window.scrollY;
+        // Add header height (approximately 80px) plus buffer
+        return Math.ceil(mainBottom) + 50;
+      }
+
+      // Fallback: find bottom of body children
       const body = document.body;
       const children = body.children;
       let maxBottom = 0;
 
       for (let i = 0; i < children.length; i++) {
         const child = children[i] as HTMLElement;
+        // Skip script tags and hidden elements
+        if (child.tagName === 'SCRIPT' || child.offsetHeight === 0) continue;
         const rect = child.getBoundingClientRect();
         const bottom = rect.bottom + window.scrollY;
         if (bottom > maxBottom) {
@@ -33,12 +53,24 @@ export function IframeHeightBroadcaster() {
         }
       }
 
-      // Add a small buffer for any margins/padding
       return Math.ceil(maxBottom) + 50;
     };
 
-    const sendHeight = () => {
+    const sendHeight = (force = false) => {
+      // Prevent too many updates (feedback loop protection)
+      if (!force && sendCount.current >= maxSendsPerPage) {
+        return;
+      }
+
       const height = getContentHeight();
+
+      // Only send if height changed by more than 10px (prevents micro-adjustments)
+      if (!force && Math.abs(height - lastSentHeight.current) < 10) {
+        return;
+      }
+
+      lastSentHeight.current = height;
+      sendCount.current++;
 
       window.parent.postMessage(
         {
@@ -49,64 +81,51 @@ export function IframeHeightBroadcaster() {
       );
     };
 
-    // Wait for all images to load before sending initial height
+    // Wait for all images to load before sending height
     const waitForImages = () => {
       const images = document.querySelectorAll("img");
-      const imagePromises = Array.from(images).map((img) => {
-        if (img.complete) {
-          return Promise.resolve();
-        }
-        return new Promise<void>((resolve) => {
-          img.addEventListener("load", () => resolve(), { once: true });
-          img.addEventListener("error", () => resolve(), { once: true });
-        });
-      });
+      let loadedCount = 0;
+      const totalImages = images.length;
 
-      Promise.all(imagePromises).then(() => {
-        sendHeight();
+      if (totalImages === 0) {
+        sendHeight(true);
+        return;
+      }
+
+      const checkAllLoaded = () => {
+        loadedCount++;
+        if (loadedCount >= totalImages) {
+          sendHeight(true);
+        }
+      };
+
+      images.forEach((img) => {
+        if (img.complete) {
+          checkAllLoaded();
+        } else {
+          img.addEventListener("load", checkAllLoaded, { once: true });
+          img.addEventListener("error", checkAllLoaded, { once: true });
+        }
       });
     };
 
-    // Send initial height after delays to ensure content is rendered
-    const initialTimeout1 = setTimeout(sendHeight, 100);
-    const initialTimeout2 = setTimeout(sendHeight, 500);
-    const initialTimeout3 = setTimeout(sendHeight, 1000);
-    const initialTimeout4 = setTimeout(sendHeight, 2000);
+    // Send initial height after content renders
+    const initialTimeout1 = setTimeout(() => sendHeight(true), 200);
+    const initialTimeout2 = setTimeout(() => sendHeight(true), 1000);
 
-    // Also wait for images
+    // Wait for images
     waitForImages();
 
-    // Send height on resize
-    window.addEventListener("resize", sendHeight);
-
     // Send height when page fully loads
-    window.addEventListener("load", sendHeight);
-
-    // Observe DOM changes that might affect height
-    const observer = new MutationObserver(() => {
-      setTimeout(sendHeight, 100);
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-    });
-
-    // Send height periodically but less frequently
-    const interval = setInterval(sendHeight, 1000);
+    const handleLoad = () => sendHeight(true);
+    window.addEventListener("load", handleLoad);
 
     return () => {
       clearTimeout(initialTimeout1);
       clearTimeout(initialTimeout2);
-      clearTimeout(initialTimeout3);
-      clearTimeout(initialTimeout4);
-      clearInterval(interval);
-      window.removeEventListener("resize", sendHeight);
-      window.removeEventListener("load", sendHeight);
-      observer.disconnect();
+      window.removeEventListener("load", handleLoad);
     };
-  }, []);
+  }, [pathname]); // Re-run when pathname changes
 
   return null;
 }
