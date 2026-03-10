@@ -33,8 +33,7 @@ export function IframeHeightBroadcaster() {
       if (main) {
         const rect = main.getBoundingClientRect();
         const mainBottom = rect.bottom + window.scrollY;
-        // Small buffer for any bottom margins
-        return Math.ceil(mainBottom) + 10;
+        return Math.ceil(mainBottom);
       }
 
       // Fallback: find bottom of body children
@@ -53,7 +52,7 @@ export function IframeHeightBroadcaster() {
         }
       }
 
-      return Math.ceil(maxBottom) + 10;
+      return Math.ceil(maxBottom);
     };
 
     const sendHeight = (force = false) => {
