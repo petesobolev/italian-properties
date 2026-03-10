@@ -28,31 +28,12 @@ export function IframeHeightBroadcaster() {
     sendCount.current = 0;
 
     const getContentHeight = () => {
-      // Use the main content element if available, otherwise body children
-      const main = document.querySelector("main");
-      if (main) {
-        const rect = main.getBoundingClientRect();
-        const mainBottom = rect.bottom + window.scrollY;
-        return Math.ceil(mainBottom);
-      }
+      // Use document.body.scrollHeight as primary - most reliable
+      const scrollHeight = document.body.scrollHeight;
+      const docScrollHeight = document.documentElement.scrollHeight;
 
-      // Fallback: find bottom of body children
-      const body = document.body;
-      const children = body.children;
-      let maxBottom = 0;
-
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i] as HTMLElement;
-        // Skip script tags and hidden elements
-        if (child.tagName === 'SCRIPT' || child.offsetHeight === 0) continue;
-        const rect = child.getBoundingClientRect();
-        const bottom = rect.bottom + window.scrollY;
-        if (bottom > maxBottom) {
-          maxBottom = bottom;
-        }
-      }
-
-      return Math.ceil(maxBottom);
+      // Return the larger of the two measurements
+      return Math.max(scrollHeight, docScrollHeight);
     };
 
     const sendHeight = (force = false) => {
@@ -63,18 +44,21 @@ export function IframeHeightBroadcaster() {
 
       const height = getContentHeight();
 
-      // Only send if height changed by more than 10px (prevents micro-adjustments)
-      if (!force && Math.abs(height - lastSentHeight.current) < 10) {
+      // Ensure minimum height of 800px
+      const finalHeight = Math.max(height, 800);
+
+      // Only send if height changed significantly (prevents micro-adjustments)
+      if (!force && Math.abs(finalHeight - lastSentHeight.current) < 50) {
         return;
       }
 
-      lastSentHeight.current = height;
+      lastSentHeight.current = finalHeight;
       sendCount.current++;
 
       window.parent.postMessage(
         {
           type: "iframe-height",
-          height: height,
+          height: finalHeight,
         },
         "*"
       );
