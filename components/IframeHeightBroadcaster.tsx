@@ -15,7 +15,7 @@ export function IframeHeightBroadcaster() {
   const pathname = usePathname();
   const lastSentHeight = useRef<number>(0);
   const sendCount = useRef<number>(0);
-  const maxSendsPerPage = 10; // Limit updates to prevent infinite loops
+  const maxSendsPerPage = 20; // Limit updates to prevent infinite loops
 
   useEffect(() => {
     // Only run if we're in an iframe
@@ -108,9 +108,13 @@ export function IframeHeightBroadcaster() {
       });
     };
 
-    // Send initial height after content renders
-    const initialTimeout1 = setTimeout(() => sendHeight(true), 200);
-    const initialTimeout2 = setTimeout(() => sendHeight(true), 1000);
+    // Send initial height after content renders at various delays
+    const initialTimeout1 = setTimeout(() => sendHeight(true), 100);
+    const initialTimeout2 = setTimeout(() => sendHeight(true), 300);
+    const initialTimeout3 = setTimeout(() => sendHeight(true), 500);
+    const initialTimeout4 = setTimeout(() => sendHeight(true), 1000);
+    const initialTimeout5 = setTimeout(() => sendHeight(true), 2000);
+    const initialTimeout6 = setTimeout(() => sendHeight(true), 3000);
 
     // Wait for images
     waitForImages();
@@ -119,10 +123,31 @@ export function IframeHeightBroadcaster() {
     const handleLoad = () => sendHeight(true);
     window.addEventListener("load", handleLoad);
 
+    // Send height on resize
+    const handleResize = () => sendHeight(true);
+    window.addEventListener("resize", handleResize);
+
+    // Limited periodic check for async content (stops after max sends reached)
+    const interval = setInterval(() => {
+      if (sendCount.current < maxSendsPerPage) {
+        sendHeight(false);
+      }
+    }, 500);
+
+    // Stop the interval after 10 seconds
+    const stopInterval = setTimeout(() => clearInterval(interval), 10000);
+
     return () => {
       clearTimeout(initialTimeout1);
       clearTimeout(initialTimeout2);
+      clearTimeout(initialTimeout3);
+      clearTimeout(initialTimeout4);
+      clearTimeout(initialTimeout5);
+      clearTimeout(initialTimeout6);
+      clearTimeout(stopInterval);
+      clearInterval(interval);
       window.removeEventListener("load", handleLoad);
+      window.removeEventListener("resize", handleResize);
     };
   }, [pathname]); // Re-run when pathname changes
 
