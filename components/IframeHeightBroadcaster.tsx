@@ -15,7 +15,7 @@ export function IframeHeightBroadcaster() {
   const pathname = usePathname();
   const lastSentHeight = useRef<number>(0);
   const sendCount = useRef<number>(0);
-  const maxSendsPerPage = 50; // Increased limit for more responsive updates
+  const maxSendsPerPage = 10; // Limit updates to prevent infinite loops
 
   useEffect(() => {
     // Only run if we're in an iframe
@@ -28,22 +28,32 @@ export function IframeHeightBroadcaster() {
     sendCount.current = 0;
 
     const getContentHeight = () => {
-      // Use multiple measurements for reliability
-      const bodyScrollHeight = document.body.scrollHeight;
-      const docScrollHeight = document.documentElement.scrollHeight;
-      const bodyOffsetHeight = document.body.offsetHeight;
+      // Use the main content element if available, otherwise body children
+      const main = document.querySelector("main");
+      if (main) {
+        const rect = main.getBoundingClientRect();
+        const mainBottom = rect.bottom + window.scrollY;
+        // Small buffer for any bottom margins
+        return Math.ceil(mainBottom) + 10;
+      }
 
-      // Get the actual bottom of all content
-      const allElements = document.body.querySelectorAll('*');
+      // Fallback: find bottom of body children
+      const body = document.body;
+      const children = body.children;
       let maxBottom = 0;
-      allElements.forEach(el => {
-        const rect = el.getBoundingClientRect();
-        const bottom = rect.bottom + window.scrollY;
-        if (bottom > maxBottom) maxBottom = bottom;
-      });
 
-      // Return the largest measurement
-      return Math.max(bodyScrollHeight, docScrollHeight, bodyOffsetHeight, maxBottom);
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i] as HTMLElement;
+        // Skip script tags and hidden elements
+        if (child.tagName === 'SCRIPT' || child.offsetHeight === 0) continue;
+        const rect = child.getBoundingClientRect();
+        const bottom = rect.bottom + window.scrollY;
+        if (bottom > maxBottom) {
+          maxBottom = bottom;
+        }
+      }
+
+      return Math.ceil(maxBottom) + 10;
     };
 
     const sendHeight = (force = false) => {
@@ -54,34 +64,22 @@ export function IframeHeightBroadcaster() {
 
       const height = getContentHeight();
 
-      // Ensure minimum height of 1200px (larger minimum to prevent truncation)
-      const finalHeight = Math.max(height, 1200);
-
-      // Only send if height changed significantly (prevents micro-adjustments)
-      if (!force && Math.abs(finalHeight - lastSentHeight.current) < 20) {
+      // Only send if height changed by more than 10px (prevents micro-adjustments)
+      if (!force && Math.abs(height - lastSentHeight.current) < 10) {
         return;
       }
 
-      lastSentHeight.current = finalHeight;
+      lastSentHeight.current = height;
       sendCount.current++;
 
       window.parent.postMessage(
         {
           type: "iframe-height",
-          height: finalHeight,
+          height: height,
         },
         "*"
       );
     };
-
-    // Listen for height request messages from parent
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === 'request-height') {
-        sendCount.current = 0; // Reset count when explicitly requested
-        sendHeight(true);
-      }
-    };
-    window.addEventListener('message', handleMessage);
 
     // Wait for all images to load before sending height
     const waitForImages = () => {
@@ -111,13 +109,9 @@ export function IframeHeightBroadcaster() {
       });
     };
 
-    // Send initial height after content renders at various delays
-    const initialTimeout1 = setTimeout(() => sendHeight(true), 100);
-    const initialTimeout2 = setTimeout(() => sendHeight(true), 300);
-    const initialTimeout3 = setTimeout(() => sendHeight(true), 500);
-    const initialTimeout4 = setTimeout(() => sendHeight(true), 1000);
-    const initialTimeout5 = setTimeout(() => sendHeight(true), 2000);
-    const initialTimeout6 = setTimeout(() => sendHeight(true), 3000);
+    // Send initial height after content renders
+    const initialTimeout1 = setTimeout(() => sendHeight(true), 200);
+    const initialTimeout2 = setTimeout(() => sendHeight(true), 1000);
 
     // Wait for images
     waitForImages();
@@ -126,32 +120,10 @@ export function IframeHeightBroadcaster() {
     const handleLoad = () => sendHeight(true);
     window.addEventListener("load", handleLoad);
 
-    // Send height on resize
-    const handleResize = () => sendHeight(true);
-    window.addEventListener("resize", handleResize);
-
-    // Limited periodic check for async content (stops after max sends reached)
-    const interval = setInterval(() => {
-      if (sendCount.current < maxSendsPerPage) {
-        sendHeight(false);
-      }
-    }, 500);
-
-    // Stop the interval after 10 seconds
-    const stopInterval = setTimeout(() => clearInterval(interval), 10000);
-
     return () => {
       clearTimeout(initialTimeout1);
       clearTimeout(initialTimeout2);
-      clearTimeout(initialTimeout3);
-      clearTimeout(initialTimeout4);
-      clearTimeout(initialTimeout5);
-      clearTimeout(initialTimeout6);
-      clearTimeout(stopInterval);
-      clearInterval(interval);
       window.removeEventListener("load", handleLoad);
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("message", handleMessage);
     };
   }, [pathname]); // Re-run when pathname changes
 
