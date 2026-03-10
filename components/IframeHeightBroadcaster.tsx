@@ -15,7 +15,7 @@ export function IframeHeightBroadcaster() {
   const pathname = usePathname();
   const lastSentHeight = useRef<number>(0);
   const sendCount = useRef<number>(0);
-  const maxSendsPerPage = 20; // Limit updates to prevent infinite loops
+  const maxSendsPerPage = 50; // Increased limit for more responsive updates
 
   useEffect(() => {
     // Only run if we're in an iframe
@@ -28,12 +28,22 @@ export function IframeHeightBroadcaster() {
     sendCount.current = 0;
 
     const getContentHeight = () => {
-      // Use document.body.scrollHeight as primary - most reliable
-      const scrollHeight = document.body.scrollHeight;
+      // Use multiple measurements for reliability
+      const bodyScrollHeight = document.body.scrollHeight;
       const docScrollHeight = document.documentElement.scrollHeight;
+      const bodyOffsetHeight = document.body.offsetHeight;
 
-      // Return the larger of the two measurements
-      return Math.max(scrollHeight, docScrollHeight);
+      // Get the actual bottom of all content
+      const allElements = document.body.querySelectorAll('*');
+      let maxBottom = 0;
+      allElements.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const bottom = rect.bottom + window.scrollY;
+        if (bottom > maxBottom) maxBottom = bottom;
+      });
+
+      // Return the largest measurement
+      return Math.max(bodyScrollHeight, docScrollHeight, bodyOffsetHeight, maxBottom);
     };
 
     const sendHeight = (force = false) => {
@@ -44,11 +54,11 @@ export function IframeHeightBroadcaster() {
 
       const height = getContentHeight();
 
-      // Ensure minimum height of 800px
-      const finalHeight = Math.max(height, 800);
+      // Ensure minimum height of 1200px (larger minimum to prevent truncation)
+      const finalHeight = Math.max(height, 1200);
 
       // Only send if height changed significantly (prevents micro-adjustments)
-      if (!force && Math.abs(finalHeight - lastSentHeight.current) < 50) {
+      if (!force && Math.abs(finalHeight - lastSentHeight.current) < 20) {
         return;
       }
 
@@ -63,6 +73,15 @@ export function IframeHeightBroadcaster() {
         "*"
       );
     };
+
+    // Listen for height request messages from parent
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'request-height') {
+        sendCount.current = 0; // Reset count when explicitly requested
+        sendHeight(true);
+      }
+    };
+    window.addEventListener('message', handleMessage);
 
     // Wait for all images to load before sending height
     const waitForImages = () => {
@@ -132,6 +151,7 @@ export function IframeHeightBroadcaster() {
       clearInterval(interval);
       window.removeEventListener("load", handleLoad);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("message", handleMessage);
     };
   }, [pathname]); // Re-run when pathname changes
 
