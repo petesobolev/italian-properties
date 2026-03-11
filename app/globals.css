@@ -1009,6 +1009,16 @@ body::before {
 }
 
 /* ============================================================================
+   IFRAME EMBED OPTIMIZATION
+   Remove min-height constraints when embedded to prevent extra whitespace
+   ============================================================================ */
+
+/* When force-desktop is active (iframe embed), remove viewport-based min-height */
+.force-desktop main {
+  min-height: auto !important;
+}
+
+/* ============================================================================
    MOBILE VIEWPORT PROTECTION
    Fallback styles to ensure responsive layout on small screens
    ============================================================================ */
