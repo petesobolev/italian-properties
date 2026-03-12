@@ -199,7 +199,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
 
           {/* Main Image */}
           <div
-            className="relative w-full h-full max-w-6xl max-h-[85vh] mx-4"
+            className="relative w-[90vw] h-[80vh] max-w-6xl"
             onClick={(e) => e.stopPropagation()}
           >
             <Image
