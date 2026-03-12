@@ -185,8 +185,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
           className="absolute left-0 w-full z-50 bg-black flex items-center justify-center"
           style={{
             top: scrollPosition,
-            height: "100vh",
-            minHeight: "600px",
+            height: "800px",
           }}
           onClick={() => setIsLightboxOpen(false)}
         >
@@ -220,7 +219,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
           <img
             src={images[activeIndex]}
             alt={`${alt} - Image ${activeIndex + 1}`}
-            style={{ maxWidth: "90vw", maxHeight: "80vh", objectFit: "contain" }}
+            style={{ maxWidth: "90%", maxHeight: "650px", objectFit: "contain" }}
             onClick={(e) => e.stopPropagation()}
           />
 
