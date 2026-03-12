@@ -19,10 +19,15 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  // Lock body scroll when lightbox is open
+  // Lock body scroll and scroll to top when lightbox is open
   useEffect(() => {
     if (isLightboxOpen) {
       document.body.style.overflow = "hidden";
+      window.scrollTo({ top: 0, behavior: "instant" });
+      // Also tell parent iframe to scroll to top
+      if (window.self !== window.top) {
+        window.parent.postMessage({ type: "iframe-scroll-top" }, "*");
+      }
     } else {
       document.body.style.overflow = "";
     }
@@ -180,7 +185,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
       {/* Lightbox */}
       {isLightboxOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+          className="fixed top-0 left-0 w-screen h-screen z-50 bg-black flex items-center justify-center"
           onClick={() => setIsLightboxOpen(false)}
         >
           {/* Close Button */}
