@@ -18,16 +18,13 @@ interface ImageGalleryProps {
 export function ImageGallery({ images, alt }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
-  // Lock body scroll and scroll to top when lightbox is open
+  // Capture scroll position and lock body scroll when lightbox opens
   useEffect(() => {
     if (isLightboxOpen) {
+      setScrollPosition(window.scrollY);
       document.body.style.overflow = "hidden";
-      window.scrollTo({ top: 0, behavior: "instant" });
-      // Also tell parent iframe to scroll to top
-      if (window.self !== window.top) {
-        window.parent.postMessage({ type: "iframe-scroll-top" }, "*");
-      }
     } else {
       document.body.style.overflow = "";
     }
@@ -185,7 +182,12 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
       {/* Lightbox */}
       {isLightboxOpen && (
         <div
-          className="fixed top-0 left-0 w-screen h-screen z-50 bg-black flex items-center justify-center"
+          className="absolute left-0 w-full z-50 bg-black flex items-center justify-center"
+          style={{
+            top: scrollPosition,
+            height: "100vh",
+            minHeight: "600px",
+          }}
           onClick={() => setIsLightboxOpen(false)}
         >
           {/* Close Button */}
@@ -218,7 +220,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
           <img
             src={images[activeIndex]}
             alt={`${alt} - Image ${activeIndex + 1}`}
-            className="max-w-[90vw] max-h-[80vh] object-contain"
+            style={{ maxWidth: "90vw", maxHeight: "80vh", objectFit: "contain" }}
             onClick={(e) => e.stopPropagation()}
           />
 
