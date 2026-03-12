@@ -198,20 +198,12 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
           </div>
 
           {/* Main Image */}
-          <div
-            className="relative w-[90vw] h-[80vh] max-w-6xl"
+          <img
+            src={images[activeIndex]}
+            alt={`${alt} - Image ${activeIndex + 1}`}
+            className="max-w-[90vw] max-h-[80vh] object-contain"
             onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={images[activeIndex]}
-              alt={`${alt} - Image ${activeIndex + 1}`}
-              fill
-              sizes="100vw"
-              className="object-contain"
-              priority
-              unoptimized
-            />
-          </div>
+          />
 
           {/* Navigation Arrows */}
           {images.length > 1 && (
