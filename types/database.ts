@@ -87,6 +87,7 @@ export type PropertyType =
  */
 export interface Property {
   id: string;                    // UUID
+  ref_code: string;              // Short reference code (e.g., "IT-A3X7K")
   region_id: string;             // FK to regions
   source_id: string;             // FK to sources
   title: string | null;          // Original listing title from source
@@ -187,6 +188,7 @@ export interface PropertyWithDetails extends Property {
  */
 export interface PropertySummary {
   id: string;
+  ref_code: string;              // Short reference code for sharing
   city: string;
   price_eur: number;
   bedrooms: number | null;

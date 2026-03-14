@@ -100,6 +100,7 @@ export async function getPropertiesByRegion(
 
     const results = await db.queryAll<{
       id: string;
+      ref_code: string;
       city: string;
       price_eur: number;
       bedrooms: number | null;
@@ -117,6 +118,7 @@ export async function getPropertiesByRegion(
     }>(
       `SELECT
         p.id,
+        p.ref_code,
         p.city,
         p.price_eur,
         p.bedrooms,
@@ -142,6 +144,7 @@ export async function getPropertiesByRegion(
     // Transform to PropertySummary with thumbnail extraction
     return results.map((row) => ({
       id: row.id,
+      ref_code: row.ref_code,
       city: row.city,
       price_eur: row.price_eur,
       bedrooms: row.bedrooms,
@@ -198,6 +201,43 @@ export async function getPropertyById(
 }
 
 /**
+ * Get a property by its short reference code (e.g., "IT-A3X7K")
+ * Returns full property details for display
+ */
+export async function getPropertyByRefCode(
+  refCode: string
+): Promise<PropertyWithDetails | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  // Normalize the ref code (uppercase, trim whitespace)
+  const normalizedCode = refCode.trim().toUpperCase();
+
+  try {
+    const result = await db.queryOne<PropertyWithDetails & { image_urls: string[] }>(
+      `SELECT
+        p.*,
+        r.name as region_name,
+        r.slug as region_slug,
+        s.id as source_id,
+        s.name as source_name,
+        s.base_url as source_base_url,
+        s.contact_email as source_contact_email
+      FROM properties p
+      JOIN regions r ON p.region_id = r.id
+      JOIN sources s ON p.source_id = s.id
+      WHERE UPPER(p.ref_code) = $1`,
+      [normalizedCode]
+    );
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching property by ref code:", error);
+    return null;
+  }
+}
+
+/**
  * Get a region by slug
  */
 export async function getRegion(slug: string): Promise<Region | null> {
@@ -248,6 +288,7 @@ export async function getArchivedProperties(): Promise<PropertySummary[]> {
   try {
     const results = await db.queryAll<{
       id: string;
+      ref_code: string;
       city: string;
       price_eur: number;
       bedrooms: number | null;
@@ -266,6 +307,7 @@ export async function getArchivedProperties(): Promise<PropertySummary[]> {
     }>(
       `SELECT
         p.id,
+        p.ref_code,
         p.city,
         p.price_eur,
         p.bedrooms,
@@ -290,6 +332,7 @@ export async function getArchivedProperties(): Promise<PropertySummary[]> {
 
     return results.map((row) => ({
       id: row.id,
+      ref_code: row.ref_code,
       city: row.city,
       price_eur: row.price_eur,
       bedrooms: row.bedrooms,

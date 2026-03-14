@@ -14,6 +14,7 @@ import { PropertyFeatures } from "@/components/PropertyFeatures";
 import { PropertyLocationMap } from "@/components/PropertyLocationMap";
 import { PropertyVideos } from "@/components/PropertyVideos";
 import { ContactForm } from "@/components/ContactForm";
+import { ShareRefCode } from "@/components/ShareRefCode";
 
 interface PropertyPageProps {
   params: Promise<{
@@ -221,8 +222,11 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                 )}
 
                 {/* Property Type Badge */}
-                <div className="mb-4">
+                <div className="mb-4 flex items-center gap-3">
                   <span className="badge badge-terracotta">{typeLabel}</span>
+                  <span className="text-sm font-mono text-[var(--color-text-muted)] bg-[var(--color-sand)] px-2 py-1 rounded">
+                    {property.ref_code}
+                  </span>
                 </div>
 
                 {/* Location */}
@@ -334,6 +338,12 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                     Updated {formatDate(property.source_updated_at || property.updated_at)}
                   </p>
                 </div>
+
+                {/* Share Reference Code */}
+                <ShareRefCode
+                  refCode={property.ref_code}
+                  baseUrl="https://italian-properties.vercel.app"
+                />
               </div>
 
               {/* Back to Region Link */}
