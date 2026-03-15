@@ -7,7 +7,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
 import { getRegionsWithCounts } from "@/lib/properties";
+import { PropertyLookup } from "@/components/PropertyLookup";
+import { RefCodeRedirect } from "@/components/RefCodeRedirect";
 
 /**
  * Region data with descriptions and imagery
@@ -57,6 +60,11 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
+      {/* Check for ?ref= parameter and redirect */}
+      <Suspense fallback={null}>
+        <RefCodeRedirect />
+      </Suspense>
+
       {/* Hero Section */}
       <section className="hero-fixed relative bg-black text-white overflow-hidden">
         {/* Background Image */}
@@ -141,6 +149,18 @@ export default async function HomePage() {
               fill="var(--color-stone)"
             />
           </svg>
+        </div>
+      </section>
+
+      {/* Property Lookup Section */}
+      <section className="py-8 sm:py-12 bg-[var(--color-cream)] border-b border-[var(--color-sand)]">
+        <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-4">
+            <h2 className="font-display text-xl text-[var(--color-text)]">
+              Have a property reference code?
+            </h2>
+          </div>
+          <PropertyLookup placeholder="Enter code (e.g., IT-A3X7K)" />
         </div>
       </section>
 
