@@ -452,6 +452,13 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
+
+          {/* Disclaimer */}
+          <div className="mt-12 pt-8 border-t border-[var(--color-sand)]">
+            <p className="text-sm text-[var(--color-text-muted)] leading-relaxed max-w-3xl mx-auto">
+              We are not licensed real estate agents or attorneys in Italy. We are property marketers who collaborate with our network of Italian real estate agents, attorneys, and other professionals to facilitate your dream of Italian property ownership.
+            </p>
+          </div>
         </div>
       </section>
     </div>
