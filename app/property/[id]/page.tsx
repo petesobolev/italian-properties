@@ -366,6 +366,13 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                 </svg>
                 Back to {regionName} Properties
               </Link>
+
+              {/* Disclaimer */}
+              <div className="mt-6 pt-6 border-t border-[var(--color-sand)]">
+                <p className="text-xs text-[var(--color-text-muted)] leading-relaxed text-center">
+                  We are not licensed real estate agents or attorneys in Italy. We are property marketers who collaborate with our network of Italian real estate agents, attorneys, and other professionals to facilitate your dream of Italian property ownership.
+                </p>
+              </div>
             </div>
           </div>
         </div>
