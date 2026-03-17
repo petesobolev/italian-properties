@@ -315,7 +315,7 @@ export default async function RegionPage({ params, searchParams }: RegionPagePro
                   <Link
                     key={slug}
                     href={`/${slug}`}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white rounded-lg text-[var(--color-text)] font-medium hover:shadow-md transition-shadow duration-200 border border-[var(--color-sand)]"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-700 rounded-lg text-[var(--color-text)] font-medium hover:shadow-md transition-shadow duration-200 border border-[var(--color-sand)] dark:border-gray-600"
                   >
                     {name}
                     <svg
