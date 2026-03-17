@@ -96,7 +96,7 @@ export default function RootLayout({
 
               {/* Tagline */}
               <p className="hidden md:block text-sm text-[var(--color-text-muted)] italic max-w-xs lg:max-w-none">
-                Featured properties by our associate agents and direct sellers
+                Featured properties by our associate agents
               </p>
 
               {/* Navigation */}
