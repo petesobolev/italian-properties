@@ -173,15 +173,6 @@ export default function RootLayout({
 
         {/* Main Content */}
         <main className="min-h-[calc(100vh-5rem)]">{children}</main>
-
-        {/* Footer */}
-        <footer className="bg-[var(--color-cream)] border-t border-[var(--color-sand)] py-8">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-sm text-[var(--color-text-muted)] text-center leading-relaxed">
-              We are not licensed real estate agents or attorneys in Italy. We are property marketers who collaborate with our network of Italian real estate agents, attorneys, and other professionals to facilitate your dream of Italian property ownership.
-            </p>
-          </div>
-        </footer>
         </ThemeProvider>
       </body>
     </html>
