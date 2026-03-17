@@ -382,13 +382,15 @@ body::before {
    SEARCH INPUT
    ============================================================================ */
 
-/* Natural language search input - force white background */
+/* Natural language search input - force white background and dark text */
 .search-input {
   background-color: #FFFFFF !important;
+  color: #2D2926 !important; /* Dark text for light mode */
 }
 
 .dark .search-input {
   background-color: #1f2937 !important; /* gray-800 */
+  color: #F5F5F5 !important; /* Light text for dark mode */
 }
 
 /* ============================================================================
